@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="spacingMicro">1dp</dimen>
+    <dimen name="spacingTiny">2dp</dimen>
+    <dimen name="spacingSmall">4dp</dimen>
+    <dimen name="spacingNormal">8dp</dimen>
+    <dimen name="spacingLarge">16dp</dimen>
+    <dimen name="spacingHuge">32dp</dimen>
+
+    <dimen name="textSizeTiny">7sp</dimen>
+    <dimen name="textSizeSmall">11sp</dimen>
+    <dimen name="textSizeNormal">14sp</dimen>
+    <dimen name="textSizeLarge">17sp</dimen>
+    <dimen name="textSizeHuge">21sp</dimen>
+
+    <dimen name="chat_footer_action_layout_height">40dp</dimen>
+    <dimen name="chat_footer_send_layout_height">40dp</dimen>
+</resources>
