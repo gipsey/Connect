@@ -1,3 +1,59 @@
 <resources>
     <string name="app_name">Connect</string>
+    <string name="control_activity_title">Home</string>
+
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Error messages -->
+    <string name="no_internet_connection">Sorry, but seems there is no internet connection. Check your network settings.
+    </string>
+
+    <string name="connecting">Connecting to %s</string>
+
+    <!-- Strings related to login -->
+    <string name="successfully_connected">Successfully connected to %s</string>
+    <string name="prompt_jid">JID (Jabber identifier)</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="error_invalid_jid">This JID is invalid</string>
+    <string name="error_invalid_password">This password is invalid</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">Contacts permissions are needed for providing username
+        completions.
+    </string>
+    <string name="logging_in">Logging in as %s</string>
+    <string name="login_succeeded">Welcome %s</string>
+
+    <string name="connection_failed">We\'re sorry but we couldn\'t establish the connection to %s.</string>
+    <string name="login_failed">Although connection was made to %s, we couldn\'t log you in.</string>
+    <string name="server">the server</string>
+
+    <!-- control screen -->
+    <string-array name="control_view_tab_titles">
+        <item>HISTORY</item>
+        <item>CONTACTS</item>
+    </string-array>
+
+    <string name="user_status_available">Available</string>
+    <string name="user_status_away">Away</string>
+    <string name="user_status_doNotDisturb">Do not disturb</string>
+    <string name="user_status_offline">Offline</string>
+
+    <string name="unfiled_group_name">Others</string>
+
+    <!-- drawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- drawer menu -->
+    <string name="drawer_my_profile">My profile</string>
+    <string name="drawer_active_chats">Active chats</string>
+    <string name="drawer_others">Others</string>
+    <string name="drawer_settings">Settings</string>
+    <string name="drawer_about">About</string>
+
+
 </resources>

@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="vertical">
+<LinearLayout
+    android:id="@+id/chat_row_parent_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/chat_row_sender"
+        android:id="@+id/chat_row_participant"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="0dp"
-        android:paddingLeft="@dimen/spacingTiny"
-        android:paddingRight="@dimen/spacingTiny"
-        android:textSize="@dimen/textSizeSmall"/>
+        android:paddingBottom="@dimen/spacingSmall"
+        android:paddingLeft="@dimen/spacingLarge"
+        android:paddingRight="@dimen/spacingLarge"
+        android:paddingTop="@dimen/spacingSmall"
+        android:textColor="@color/chat_main"
+        android:textSize="@dimen/textSizeNormal"/>
 
-    <TextView
-        android:id="@+id/chat_row_message"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/chat_row_message_layout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="0dp"
-        android:paddingLeft="@dimen/spacingTiny"
-        android:paddingRight="@dimen/spacingTiny"
-        android:textSize="@dimen/textSizeLarge"/>
+        android:paddingLeft="@dimen/spacingSmall"
+        android:paddingRight="@dimen/spacingSmall">
 
+        <TextView
+            android:id="@+id/chat_row_message_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:maxEms="12"
+            android:textSize="@dimen/textSizeLarge"/>
+    </LinearLayout>
 </LinearLayout>

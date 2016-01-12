@@ -2,7 +2,71 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:background="@drawable/chat_background"
               android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/chat_toolbar"
+        style="@style/Toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="12"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/toolbar_userName_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:paddingBottom="@dimen/spacingMicro"
+                    android:paddingLeft="@dimen/spacingTiny"
+                    android:paddingRight="@dimen/spacingTiny"
+                    android:paddingTop="@dimen/spacingTiny"
+                    android:singleLine="true"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/textSizeLarge"/>
+
+                <TextView
+                    android:id="@+id/toolbar_status_textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:paddingBottom="@dimen/spacingTiny"
+                    android:paddingLeft="@dimen/spacingTiny"
+                    android:paddingRight="@dimen/spacingTiny"
+                    android:paddingTop="@dimen/spacingMicro"
+                    android:singleLine="true"
+                    android:textColor="@color/cream"
+                    android:textSize="@dimen/textSizeSmall"/>
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/toolbar_availability_imageView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center_vertical"
+                android:paddingEnd="@dimen/spacingNormal"
+                android:paddingLeft="@dimen/spacingNormal"
+                android:paddingRight="@dimen/spacingNormal"
+                android:paddingStart="@dimen/spacingNormal"/>
+        </LinearLayout>
+    </android.support.v7.widget.Toolbar>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -13,8 +77,13 @@
             android:id="@+id/chat_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:cacheColorHint="@android:color/transparent"
             android:divider="@null"
-            android:dividerHeight="0dp"/>
+            android:dividerHeight="0dp"
+            android:listSelector="@android:color/transparent"
+            android:smoothScrollbar="true"
+            android:stackFromBottom="true"
+            android:transcriptMode="alwaysScroll"/>
 
         <TextView
             android:id="@+id/chat_empty_view"
@@ -22,6 +91,8 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:gravity="center"
+            android:textColor="@color/chat_main"
+            android:textSize="@dimen/textSizeLarge"
             android:visibility="gone"/>
     </RelativeLayout>
 
@@ -29,27 +100,9 @@
         android:id="@+id/chat_action_and_send_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/spacingSmall"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:id="@+id/footer_action_layout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/chat_footer_action_layout_height"
-            android:orientation="horizontal">
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Test1"/>
-
-            <Button
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="Test2"/>
-        </LinearLayout>
+        android:background="@color/chat_send_layout"
+        android:orientation="vertical"
+        android:padding="@dimen/spacingSmall">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -63,17 +116,17 @@
                 android:layout_alignParentLeft="true"
                 android:layout_weight="1"
                 android:hint="Type your message..."
+                android:imeActionId="@+id/footer_chat_message_edit_text_action_id"
                 android:imeOptions="actionSend"
                 android:inputType="textCapSentences"
                 android:singleLine="false"/>
 
-            <Button
+            <ImageButton
                 android:id="@+id/footer_chat_send_button"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_alignParentRight="true"
-                android:text="Send"
-                android:textAlignment="center"
+                android:background="@drawable/send_button"
                 android:textAllCaps="false"/>
         </LinearLayout>
     </LinearLayout>

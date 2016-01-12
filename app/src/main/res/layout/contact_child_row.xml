@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:baselineAligned="false"
+              android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/name_layout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="8"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/name_initial_textView"
+            android:layout_width="@dimen/contact_name_initial_width"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:padding="@dimen/spacingLarge"
+            android:textAllCaps="true"
+            android:textSize="@dimen/textSizeExtraHuge"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/name_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:ellipsize="end"
+                android:gravity="center"
+                android:paddingBottom="@dimen/spacingMicro"
+                android:paddingLeft="@dimen/spacingTiny"
+                android:paddingRight="@dimen/spacingTiny"
+                android:paddingTop="@dimen/spacingTiny"
+                android:textSize="@dimen/textSizeLarge"/>
+
+            <TextView
+                android:id="@+id/presence_status_textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:paddingBottom="@dimen/spacingTiny"
+                android:paddingLeft="@dimen/spacingTiny"
+                android:paddingRight="@dimen/spacingTiny"
+                android:paddingTop="@dimen/spacingMicro"
+                android:singleLine="true"
+                android:textSize="@dimen/textSizeSmall"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/availability_layout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="3"
+        android:gravity="center_vertical"
+        android:padding="@dimen/spacingSmall">
+
+        <ImageView
+            android:id="@+id/availability_imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="availability"/>
+
+        <TextView
+            android:id="@+id/availability_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/availability_imageView"
+            android:textSize="@dimen/textSizeSmall"/>
+    </RelativeLayout>
+</LinearLayout>

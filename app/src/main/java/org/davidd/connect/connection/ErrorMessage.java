@@ -2,28 +2,32 @@ package org.davidd.connect.connection;
 
 import android.support.annotation.NonNull;
 
-/**
- * @author David Debre
- *         on 2015/12/12
- */
 public class ErrorMessage {
-    private String mMessage;
-    private Throwable mThrowable;
+    private String message;
+    private Throwable throwable;
 
     public ErrorMessage(@NonNull String message) {
-        mMessage = message;
+        this.message = message;
     }
 
     public ErrorMessage(@NonNull String message, @NonNull Throwable throwable) {
-        mMessage = message;
-        mThrowable = throwable;
+        this.message = message;
+        this.throwable = throwable;
     }
 
     public String getMessage() {
-        return mMessage;
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     public Throwable getThrowable() {
-        return mThrowable;
+        return throwable;
+    }
+
+    public void setThrowable(Throwable throwable) {
+        this.throwable = throwable;
     }
 }

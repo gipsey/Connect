@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="gray_light">#AAAAAA</color>
+    <color name="gray_dark">#666666</color>
+    <color name="red_light">#FF7777</color>
+    <color name="green_light">#77FF77</color>
+    <color name="blue_light">#7777FF</color>
+    <color name="cream">#FFFDD0</color>
+
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="contacts_group_background">#CCCCCC</color>
+    <color name="list_view_divider">#DDDDDD</color>
+
+    <color name="chat_main">@color/colorAccent</color>
+    <color name="chat_send_layout">#99FFFFFF</color>
+
+</resources>
