@@ -6,8 +6,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import org.davidd.connect.R;
+import org.davidd.connect.ui.fragment.ActiveChatsFragment;
 import org.davidd.connect.ui.fragment.ContactsFragment;
-import org.davidd.connect.ui.fragment.HistoryFragment;
 
 public class ControlPagerAdapter extends FragmentPagerAdapter {
 
@@ -23,7 +23,7 @@ public class ControlPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new HistoryFragment();
+                return new ActiveChatsFragment();
             case 1:
                 return new ContactsFragment();
             default:

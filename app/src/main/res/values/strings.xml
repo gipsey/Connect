@@ -33,7 +33,7 @@
 
     <!-- control screen -->
     <string-array name="control_view_tab_titles">
-        <item>HISTORY</item>
+        <item>ACTIVE CHATS</item>
         <item>CONTACTS</item>
     </string-array>
 
@@ -43,6 +43,8 @@
     <string name="user_status_offline">Offline</string>
 
     <string name="unfiled_group_name">Others</string>
+    <string name="no_active_chats">There are no active chats, so start one…</string>
+    <string name="no_contacts">There are no contacts to show…</string>
 
     <!-- drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>

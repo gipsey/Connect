@@ -5,13 +5,12 @@ import android.os.Bundle;
 
 import org.davidd.connect.R;
 import org.davidd.connect.model.User;
-import org.davidd.connect.ui.fragment.ContactsFragment;
 import org.davidd.connect.ui.fragment.ControlFragment;
 import org.davidd.connect.util.ActivityUtils;
 
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
-public class ControlActivity extends NavigationActivity implements ContactsFragment.NavigationListener {
+public class ControlActivity extends NavigationActivity implements NavigateToChatListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +25,7 @@ public class ControlActivity extends NavigationActivity implements ContactsFragm
     }
 
     @Override
-    public void navigationToChatRequested(User userToChatWith) {
+    public void navigateToChat(User userToChatWith) {
         String userAsJsonFormattedString = createGsonWithExcludedFields().toJson(userToChatWith);
         Bundle bundle = new Bundle();
         bundle.putString(ChatActivity.USER_TO_CHAT_WITH, userAsJsonFormattedString);

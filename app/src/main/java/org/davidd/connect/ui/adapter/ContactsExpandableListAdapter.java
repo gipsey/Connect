@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.davidd.connect.R;
@@ -14,6 +13,9 @@ import org.davidd.connect.model.User;
 import org.davidd.connect.util.DataUtils;
 
 import java.util.List;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
 
@@ -87,14 +89,14 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
         ContactViewHolder viewHolder;
 
         if (convertView == null) {
-            convertView = inflater.inflate(R.layout.contact_child_row, parent, false);
+            convertView = inflater.inflate(R.layout.contact_row, parent, false);
             viewHolder = new ContactViewHolder(convertView);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ContactViewHolder) convertView.getTag();
         }
 
-        viewHolder.setup(contactGroups.get(groupPosition).getUsers().get(childPosition));
+        setupContact(viewHolder, contactGroups.get(groupPosition).getUsers().get(childPosition));
 
         return convertView;
     }
@@ -108,49 +110,35 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
         return contactGroups.get(groupPosition).getUsers().get(childPosition);
     }
 
-    private class GroupViewHolder {
+    private void setupContact(ContactViewHolder viewHolder, User user) {
+        viewHolder.firstLetterTextView.setText(String.valueOf(user.getUserJIDProperties().getJID().charAt(0)));
+        viewHolder.userNameTextView.setText(user.getUserJIDProperties().getNameAndDomain());
+
+        String status = user.getUserPresence().getPresence().getStatus();
+        if (DataUtils.isEmpty(status)) {
+            viewHolder.statusTextView.setVisibility(View.GONE);
+            viewHolder.statusTextView.setText(null);
+        } else {
+            viewHolder.statusTextView.setVisibility(View.VISIBLE);
+            viewHolder.statusTextView.setText(status);
+        }
+
+        viewHolder.availabilityTextView.setText(user.getUserPresence().getUserPresenceType().getStatus());
+        viewHolder.availabilityImageView.setImageResource(
+                ContactsHelper.getImageResourceFromUserPresence(user.getUserPresence().getUserPresenceType()));
+    }
+
+    class GroupViewHolder {
+
+        @Bind(R.id.group_name)
         TextView groupNameTextView;
 
-        GroupViewHolder(View view) {
-            groupNameTextView = (TextView) view.findViewById(R.id.group_name);
+        private GroupViewHolder(View view) {
+            ButterKnife.bind(this, view);
         }
 
         void setup(String groupName) {
             groupNameTextView.setText(groupName);
-        }
-    }
-
-    private class ContactViewHolder {
-        TextView firstLetterTextView;
-        TextView userNameTextView;
-        TextView statusTextView;
-        TextView availabilityTextView;
-        ImageView availabilityImageView;
-
-        ContactViewHolder(View view) {
-            firstLetterTextView = (TextView) view.findViewById(R.id.name_initial_textView);
-            userNameTextView = (TextView) view.findViewById(R.id.name_textView);
-            statusTextView = (TextView) view.findViewById(R.id.presence_status_textView);
-            availabilityTextView = (TextView) view.findViewById(R.id.availability_textView);
-            availabilityImageView = (ImageView) view.findViewById(R.id.availability_imageView);
-        }
-
-        void setup(User user) {
-            firstLetterTextView.setText(String.valueOf(user.getUserJIDProperties().getJID().charAt(0)));
-            userNameTextView.setText(user.getUserJIDProperties().getNameAndDomain());
-
-            String status = user.getUserPresence().getPresence().getStatus();
-            if (DataUtils.isEmpty(status)) {
-                statusTextView.setVisibility(View.GONE);
-                statusTextView.setText(null);
-            } else {
-                statusTextView.setVisibility(View.VISIBLE);
-                statusTextView.setText(status);
-            }
-
-            availabilityTextView.setText(user.getUserPresence().getUserPresenceType().getStatus());
-            availabilityImageView.setImageResource(
-                    ContactsHelper.getImageResourceFromUserPresence(user.getUserPresence().getUserPresenceType()));
         }
     }
 }

@@ -26,8 +26,8 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:gravity="center"
+            android:layout_gravity="start"
+            android:gravity="center_vertical"
             android:orientation="vertical">
 
             <TextView
@@ -44,7 +44,7 @@
                 android:textSize="@dimen/textSizeLarge"/>
 
             <TextView
-                android:id="@+id/presence_status_textView"
+                android:id="@+id/status_textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"

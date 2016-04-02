@@ -7,11 +7,15 @@
     <ExpandableListView
         android:id="@+id/contacts_expandableListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:childDivider="@drawable/list_view_divider"/>
 
-    <View
+    <TextView
+        android:id="@+id/contacts_empty_view"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/legacy1dp"
-        android:background="@drawable/list_view_divider"/>
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textAllCaps="false"
+        android:textSize="@dimen/textSizeLarge"/>
 </LinearLayout>

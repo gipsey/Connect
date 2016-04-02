@@ -1,6 +1,5 @@
 package org.davidd.connect.ui.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -8,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 
 import org.davidd.connect.R;
 import org.davidd.connect.manager.RosterManager;
@@ -24,17 +24,10 @@ import butterknife.ButterKnife;
 public class ContactsFragment extends ControlActivityFragment implements RosterManager.UserContactsUpdatedListener {
 
     @Bind(R.id.contacts_expandableListView)
-    ExpandableListView contactsExpandableListView;
+    ExpandableListView expandableListView;
 
     private ContactsExpandableListAdapter contactsExpandableListAdapter;
     private List<ContactGroup> contactGroups = new ArrayList<>();
-    private NavigationListener navigationListener;
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        navigationListener = (NavigationListener) context;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,23 +46,27 @@ public class ContactsFragment extends ControlActivityFragment implements RosterM
 
         ButterKnife.bind(this, view);
 
-        contactsExpandableListAdapter = new ContactsExpandableListAdapter(getActivity(), contactGroups, contactsExpandableListView);
+        TextView emptyView = (TextView) view.findViewById(R.id.contacts_empty_view);
+        emptyView.setText(R.string.no_contacts);
 
-        contactsExpandableListView.setAdapter(contactsExpandableListAdapter);
-        contactsExpandableListView.setGroupIndicator(null);
+        expandableListView.setEmptyView(emptyView);
 
-        contactsExpandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+        contactsExpandableListAdapter = new ContactsExpandableListAdapter(getActivity(), contactGroups, expandableListView);
+
+        expandableListView.setAdapter(contactsExpandableListAdapter);
+        expandableListView.setGroupIndicator(null);
+
+        expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
                 return true;
             }
         });
 
-        contactsExpandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+        expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                navigationListener.navigationToChatRequested(
-                        contactsExpandableListAdapter.getUser(groupPosition, childPosition));
+                navigateToChatListener.navigateToChat(contactsExpandableListAdapter.getUser(groupPosition, childPosition));
                 return true;
             }
         });
@@ -132,10 +129,7 @@ public class ContactsFragment extends ControlActivityFragment implements RosterM
 
         ContactGroup group = new ContactGroup(name, new ArrayList<User>());
         contactGroups.add(group);
-        return group;
-    }
 
-    public interface NavigationListener {
-        void navigationToChatRequested(User user);
+        return group;
     }
 }
