@@ -1,6 +1,5 @@
 package org.davidd.connect.ui.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -11,15 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.davidd.connect.R;
-import org.davidd.connect.model.User;
-import org.davidd.connect.ui.activity.ChatActivity;
 import org.davidd.connect.ui.adapter.ControlPagerAdapter;
-import org.davidd.connect.util.ActivityUtils;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-
-import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
 public class ControlFragment extends Fragment {
 

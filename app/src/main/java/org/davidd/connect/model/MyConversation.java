@@ -1,7 +1,5 @@
 package org.davidd.connect.model;
 
-import org.jivesoftware.smack.chat.Chat;
-
 import java.util.ArrayList;
 import java.util.List;
 

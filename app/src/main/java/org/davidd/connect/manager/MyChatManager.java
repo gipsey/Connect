@@ -18,20 +18,19 @@ import org.jivesoftware.smack.chat.ChatManagerListener;
 import org.jivesoftware.smack.chat.ChatMessageListener;
 import org.jivesoftware.smack.packet.Message;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
-    public interface MessageReceivedListener {
-        void messageReceived(Message message);
-    }
-
     private static MyChatManager myChatManager;
-
-    private Map<String, MyConversation> conversationsByUserNameAndDomain = new HashMap<>();
-    private Map<String, MessageReceivedListener> messageReceivedListenersByUserNameAndDomain = new HashMap<>();
+    // the used key is the user's name and domain
+    private Map<String, MyConversation> conversations = new HashMap<>();
+    // the used key is the user's name and domain
+    private Map<String, List<MessageReceivedListener>> messageListeners = new HashMap<>();
 
     private MyChatManager() {
     }
@@ -43,23 +42,33 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         return myChatManager;
     }
 
-    public static boolean isValidChatMessage(Message message) {
-        return (message.getType() == Message.Type.chat || message.getType() == Message.Type.normal)
-                && !DataUtils.isEmpty(message.getBody());
-    }
-
     public void addMessageReceivedListener(User userToChatWith, MessageReceivedListener listener) {
         if (listener != null) {
-            messageReceivedListenersByUserNameAndDomain.put(userToChatWith.getUserJIDProperties().getNameAndDomain(), listener);
+            List<MessageReceivedListener> listenerList =
+                    messageListeners.get(userToChatWith.getUserJIDProperties().getNameAndDomain());
+
+            if (listenerList == null) {
+                listenerList = new ArrayList<>();
+            }
+
+            listenerList.add(listener);
+
+            messageListeners.put(userToChatWith.getUserJIDProperties().getNameAndDomain(), listenerList);
         }
     }
 
-    public void removeMessageReceivedListener(User userToChatWith) {
-        messageReceivedListenersByUserNameAndDomain.remove(userToChatWith.getUserJIDProperties().getNameAndDomain());
+    public void removeMessageReceivedListener(User userToChatWith, MessageReceivedListener listener) {
+        List<MessageReceivedListener> listenerList =
+                messageListeners.get(userToChatWith.getUserJIDProperties().getNameAndDomain());
+
+        listenerList.remove(listener);
+        messageListeners.put(userToChatWith.getUserJIDProperties().getNameAndDomain(), listenerList);
     }
 
     @Nullable
     public MyMessage sendMessage(@NonNull User userToChatWith, String messageBody) {
+        L.d(new Object() {});
+
         Message message = new Message();
         message.setType(Message.Type.chat);
         message.setBody(messageBody);
@@ -70,19 +79,23 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
             Chat chat = getChatManager().createChat(userToChatWith.getUserJIDProperties().getJID());
             chat.sendMessage(message);
 
+            L.d(new Object() {}, "Message sent to: " + userToChatWith.getUserJIDProperties().getJID() + ", message: " +
+                    message.getBody());
+
             Date date = DataUtils.getCurrentDate();
 
-            saveMessageInConversationHistory(chat, message, date);
+            saveMessageHistory(getSenderUser(chat, message), message, date);
 
             return new MyMessage(
                     UserManager.instance().getCurrentUser(),
                     userToChatWith,
                     messageBody,
                     date);
+
         } catch (SmackException.NotConnectedException e) {
-            L.e(new Object() {}, e.getMessage());
-            return null;
+            L.ex(e);
         }
+        return null;
     }
 
     @Override
@@ -92,11 +105,11 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         chat.addMessageListener(this);
 
         String userNameAndDomain = getUserNameAndDomain(chat);
-        if (!conversationsByUserNameAndDomain.containsKey(userNameAndDomain)) {
-            conversationsByUserNameAndDomain.put(userNameAndDomain, new MyConversation());
+        if (!conversations.containsKey(userNameAndDomain)) {
+            conversations.put(userNameAndDomain, new MyConversation());
         }
 
-        messagesUpdated();
+        chatsUpdated();
     }
 
     /**
@@ -106,39 +119,50 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
     public void processMessage(Chat chat, Message message) {
         L.d(new Object() {}, "Message from: " + chat.getParticipant());
 
-        saveMessageInConversationHistory(chat, message, DataUtils.getCurrentDate());
-        notifyMessageReceivedListener(getSenderUser(chat, message), message);
+        User sender = getSenderUser(chat, message);
+
+        saveMessageHistory(sender, message, DataUtils.getCurrentDate());
+        notifyMessageReceivedListeners(sender, message);
+
+        chatsUpdated();
     }
 
-    private void saveMessageInConversationHistory(Chat chat, Message message, Date date) {
-        if (isValidChatMessage(message)) {
-            User sender = getSenderUser(chat, message);
+    private void saveMessageHistory(User sender, Message message, Date date) {
+        L.d(new Object() {});
+
+        if (isMessage(message)) {
+            L.d(new Object() {}, "Saving message: " + message.getBody() + ", from : " + sender.getUserJIDProperties().getNameAndDomain());
+
             MyMessage myMessage = new MyMessage(sender, getReceiverUser(message), message.getBody(), date);
 
-            conversationsByUserNameAndDomain.get(sender.getUserJIDProperties().getNameAndDomain()).getMessageList().add(myMessage);
-
-            messagesUpdated();
+            conversations.get(sender.getUserJIDProperties().getNameAndDomain()).getMessageList().add(myMessage);
         }
     }
 
-    private void notifyMessageReceivedListener(User senderUser, final Message message) {
-        final MessageReceivedListener listener =
-                messageReceivedListenersByUserNameAndDomain.get(senderUser.getUserJIDProperties().getNameAndDomain());
+    private void notifyMessageReceivedListeners(final User senderUser, final Message message) {
+        L.d(new Object() {});
 
         ConnectApp.getMainHandler().post(new Runnable() {
             @Override
             public void run() {
-                if (listener != null) {
-                    listener.messageReceived(message);
+                List<MessageReceivedListener> listenerList =
+                        messageListeners.get(senderUser.getUserJIDProperties().getNameAndDomain());
+
+                if (listenerList != null) {
+                    for (MessageReceivedListener listener : listenerList) {
+                        listener.messageReceived(message);
+                    }
                 }
             }
         });
     }
 
     /**
-     * Called when messages were updated or new chat was created.
+     * Called when messages were updated or new chats were created.
      */
-    private void messagesUpdated() {
+    private void chatsUpdated() {
+        L.d(new Object() {});
+
         ConnectApp.getMainHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -170,7 +194,16 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         return new UserJIDProperties(chat.getParticipant()).getNameAndDomain();
     }
 
+    private boolean isMessage(Message message) {
+        return (message.getType() == Message.Type.chat || message.getType() == Message.Type.normal)
+                && !DataUtils.isEmpty(message.getBody());
+    }
+
     private ChatManager getChatManager() {
         return MyConnectionManager.instance().getChatManager();
+    }
+
+    public interface MessageReceivedListener {
+        void messageReceived(Message message);
     }
 }

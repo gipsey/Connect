@@ -43,7 +43,8 @@ import butterknife.OnEditorAction;
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 import static org.davidd.connect.util.DataUtils.getCurrentDate;
 
-public class ChatFragment extends Fragment implements Toolbar.OnMenuItemClickListener,
+public class ChatFragment extends Fragment implements
+        Toolbar.OnMenuItemClickListener,
         RosterManager.PresenceChangedListener,
         MyChatManager.MessageReceivedListener {
 
@@ -137,7 +138,7 @@ public class ChatFragment extends Fragment implements Toolbar.OnMenuItemClickLis
     @Override
     public void onStop() {
         super.onStop();
-        MyChatManager.instance().removeMessageReceivedListener(userToChatWith);
+        MyChatManager.instance().removeMessageReceivedListener(userToChatWith, this);
         RosterManager.instance().removePresenceChangedListener(this);
     }
 
@@ -206,7 +207,7 @@ public class ChatFragment extends Fragment implements Toolbar.OnMenuItemClickLis
     @Override
     public void messageReceived(Message message) {
         L.d(new Object() {});
-        if (!MyChatManager.isValidChatMessage(message)) {
+        if (!isMessageValid(message)) {
             L.d(new Object() {}, "Message is empty");
             return;
         }
@@ -217,6 +218,11 @@ public class ChatFragment extends Fragment implements Toolbar.OnMenuItemClickLis
                 message.getBody(),
                 getCurrentDate()));
         chatAdapter.notifyDataSetChanged();
+    }
+
+    private boolean isMessageValid(Message message) {
+        return (message.getType() == Message.Type.chat || message.getType() == Message.Type.normal)
+                && !DataUtils.isEmpty(message.getBody());
     }
 
     @Override

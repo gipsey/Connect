@@ -11,6 +11,7 @@ import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.util.DataUtils;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionListener;
+import org.jivesoftware.smack.ReconnectionManager;
 import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
@@ -31,13 +32,14 @@ public class MyConnectionManager implements ConnectionListener {
     public static final int PORT = 5222;
     public static final int PORT_SSL = 5223;
     public static final int CONNECTION_TIMEOUT = 5000; // in milliseconds
+    public static final int RECONNECTION_DELAY = 3; // in seconds
 
     private static MyConnectionManager connectionManager;
     private List<MyConnectionListener> myConnectionListeners = new ArrayList<>();
     private List<MyDisconnectionListener> myDisconnectionListeners = new ArrayList<>();
     private XMPPTCPConnection xmppTcpConnection;
 
-    private boolean ENABLE_DEBUG_MODE = true;
+    private boolean ENABLE_DEBUG_MODE = false;
 
     private ChatManager chatManager;
 
@@ -57,10 +59,18 @@ public class MyConnectionManager implements ConnectionListener {
         }
     }
 
+    public void removeConnectionListener(MyConnectionListener listener) {
+        myConnectionListeners.remove(listener);
+    }
+
     public void addDisconnectionListener(MyDisconnectionListener listener) {
         if (listener != null && !myDisconnectionListeners.contains(listener)) {
             myDisconnectionListeners.add(listener);
         }
+    }
+
+    public void removeDisconnectionListener(MyDisconnectionListener listener) {
+        myDisconnectionListeners.remove(listener);
     }
 
     @Nullable
@@ -72,11 +82,9 @@ public class MyConnectionManager implements ConnectionListener {
         return xmppTcpConnection.getConfiguration().getServiceName();
     }
 
-    public void removeConnectionListener(MyConnectionListener listener) {
-        myConnectionListeners.remove(listener);
-    }
-
     public void connect(@NonNull final UserJIDProperties JIDProperties, @NonNull final String password, @Nullable final MyConnectionListener connectionListener) {
+        L.d(new Object() {}, "JID: " + JIDProperties.getJID() + ", password: " + password + ", MyConnectionListener: " + connectionListener);
+
         if (!JIDProperties.isNameAndDomainValid()) {
             onConnectionFailed(new ErrorMessage("JID's name and/or domain are null or empty."));
         }
@@ -87,6 +95,7 @@ public class MyConnectionManager implements ConnectionListener {
 
         // Tear down the connection if exists, because we allow only one connection at the same time
         if (xmppTcpConnection != null) {
+            L.d(new Object() {}, "Disconnection started");
             disconnect(new MyDisconnectionListener() {
                 @Override
                 public void onDisconnect() {
@@ -103,28 +112,22 @@ public class MyConnectionManager implements ConnectionListener {
      * after checking the parameters.
      */
     private void createConnection(UserJIDProperties JIDProperties, String password, MyConnectionListener connectionListener) {
+        L.d(new Object() {}, "JID: " + JIDProperties.getJID() + ", password: " + password);
+
         // Create the connection object
         XMPPTCPConnectionConfiguration.Builder builder = initializeConnection();
-
-        if (ENABLE_DEBUG_MODE) {
-            builder.setDebuggerEnabled(true);
-            SmackConfiguration.DEBUG = true;
-            System.setProperty("smack.debugEnabled", "true");
-            //            System.setProperty("smack.debuggerClass", "org.jivesoftware.smackx.debugger.EnhancedDebugger");
-        } else {
-            builder.setDebuggerEnabled(false);
-            SmackConfiguration.DEBUG = false;
-            System.setProperty("smack.debugEnabled", "false");
-        }
 
         builder.setUsernameAndPassword(JIDProperties.getName(), password);
         builder.setServiceName(JIDProperties.getDomain());
         builder.setHost(JIDProperties.getDomain());
         builder.setSendPresence(true);
-        xmppTcpConnection = new XMPPTCPConnection(builder.build());
 
-        // Add ConnectionListener
-        xmppTcpConnection.addConnectionListener(MyConnectionManager.this);
+        xmppTcpConnection = new XMPPTCPConnection(builder.build());
+        xmppTcpConnection.addConnectionListener(this);
+
+        ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(xmppTcpConnection);
+        reconnectionManager.enableAutomaticReconnection();
+        reconnectionManager.setFixedDelay(RECONNECTION_DELAY);
 
         addConnectionListener(connectionListener);
 
@@ -153,8 +156,39 @@ public class MyConnectionManager implements ConnectionListener {
         }.execute();
     }
 
+    private XMPPTCPConnectionConfiguration.Builder initializeConnection() {
+        XMPPTCPConnection.setUseStreamManagementDefault(true);
+
+        XMPPTCPConnectionConfiguration.Builder builder = XMPPTCPConnectionConfiguration.builder();
+        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.ifpossible);
+        builder.setPort(PORT);
+        builder.setConnectTimeout(CONNECTION_TIMEOUT);
+        builder.setCompressionEnabled(false);
+
+        if (ENABLE_DEBUG_MODE) {
+            builder.setDebuggerEnabled(true);
+            SmackConfiguration.DEBUG = true;
+            System.setProperty("smack.debugEnabled", "true");
+            // System.setProperty("smack.debuggerClass", "org.jivesoftware.smackx.debugger.EnhancedDebugger");
+        } else {
+            builder.setDebuggerEnabled(false);
+            SmackConfiguration.DEBUG = false;
+            System.setProperty("smack.debugEnabled", "false");
+        }
+
+        try {
+            TLSUtils.acceptAllCertificates(builder);
+            TLSUtils.disableHostnameVerificationForTlsCertificicates(builder);
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            e.printStackTrace();
+        }
+
+        return builder;
+    }
+
     private void disconnect(final MyDisconnectionListener disconnectionListener) {
         xmppTcpConnection.removeConnectionListener(this);
+
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -195,29 +229,6 @@ public class MyConnectionManager implements ConnectionListener {
                 }
             }
         }.execute();
-    }
-
-    private XMPPTCPConnectionConfiguration.Builder initializeConnection() {
-        SmackConfiguration.DEBUG = true;
-
-        XMPPTCPConnection.setUseStreamManagementDefault(true);
-
-        XMPPTCPConnectionConfiguration.Builder builder = XMPPTCPConnectionConfiguration.builder();
-        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
-        builder.setPort(PORT);
-        builder.setConnectTimeout(CONNECTION_TIMEOUT);
-        builder.setCompressionEnabled(false);
-        builder.setDebuggerEnabled(false);
-        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.ifpossible);
-
-        try {
-            TLSUtils.acceptAllCertificates(builder);
-            TLSUtils.disableHostnameVerificationForTlsCertificicates(builder);
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            e.printStackTrace();
-        }
-
-        return builder;
     }
 
     @Override
