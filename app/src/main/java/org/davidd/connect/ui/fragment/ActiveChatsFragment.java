@@ -11,8 +11,13 @@ import android.widget.TextView;
 
 import org.davidd.connect.R;
 import org.davidd.connect.manager.MyChatManager;
+import org.davidd.connect.manager.UserPresenceChangedMessage;
 import org.davidd.connect.model.ActiveChat;
+import org.davidd.connect.model.User;
 import org.davidd.connect.ui.adapter.ActiveChatsAdapter;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +70,7 @@ public class ActiveChatsFragment extends ControlActivityFragment implements
     public void onStart() {
         super.onStart();
         MyChatManager.instance().addChatUpdatedListener(this);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -77,6 +83,20 @@ public class ActiveChatsFragment extends ControlActivityFragment implements
     public void onStop() {
         super.onStop();
         MyChatManager.instance().removeChatUpdatedListener(this);
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void userPresenceChanged(UserPresenceChangedMessage message) {
+        for (ActiveChat activeChat : chatsAdapter.getActiveChats()) {
+            User partner = activeChat.getUserToChatWith();
+            if (partner.equals(message.getUser())) {
+                partner.setUserPresence(message.getUser().getUserPresence());
+                activeChat.setUserToChatWith(partner);
+                chatsAdapter.notifyDataSetChanged();
+                return;
+            }
+        }
     }
 
     @Override

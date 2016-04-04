@@ -22,6 +22,7 @@ import org.davidd.connect.R;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.RosterManager;
+import org.davidd.connect.manager.UserPresenceChangedMessage;
 import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresenceType;
@@ -29,8 +30,10 @@ import org.davidd.connect.ui.activity.ChatActivity;
 import org.davidd.connect.ui.adapter.ChatAdapter;
 import org.davidd.connect.ui.adapter.ContactsHelper;
 import org.davidd.connect.util.DataUtils;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Presence;
 
 import java.util.ArrayList;
 
@@ -43,7 +46,6 @@ import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
 public class ChatFragment extends Fragment implements
         Toolbar.OnMenuItemClickListener,
-        RosterManager.PresenceChangedListener,
         MyChatManager.MessageReceivedListener {
 
     public static final String TAG = ChatFragment.class.getName();
@@ -124,7 +126,7 @@ public class ChatFragment extends Fragment implements
     public void onStart() {
         super.onStart();
         MyChatManager.instance().addMessageReceivedListener(userToChatWith, this);
-        RosterManager.instance().addPresenceChangedListener(this);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -137,15 +139,13 @@ public class ChatFragment extends Fragment implements
     public void onStop() {
         super.onStop();
         MyChatManager.instance().removeMessageReceivedListener(userToChatWith, this);
-        RosterManager.instance().removePresenceChangedListener(this);
+        EventBus.getDefault().unregister(this);
     }
 
-    @Override
-    public void presenceChanged(Presence presence) {
-        if (DataUtils.isEmpty(presence.getFrom())
-                || presence.getFrom().contains(userToChatWith.getUserJIDProperties().getNameAndDomain())) {
-            userToChatWith.setUserPresence(
-                    RosterManager.instance().getUserPresenceForUser(userToChatWith.getUserJIDProperties()));
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void userPresenceChanged(UserPresenceChangedMessage message) {
+        if (message.getUser().equals(userToChatWith)) {
+            userToChatWith.setUserPresence(message.getUser().getUserPresence());
             updateUserPresenceOnUi();
         }
     }

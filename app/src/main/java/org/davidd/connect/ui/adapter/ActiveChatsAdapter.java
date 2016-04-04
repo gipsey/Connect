@@ -15,6 +15,7 @@ import java.util.List;
 
 public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
 
+    private final List<ActiveChat> activeChats;
     private LayoutInflater inflater;
     private int resource;
 
@@ -22,6 +23,8 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
         super(context, resource, activeChats);
 
         this.resource = resource;
+        this.activeChats = activeChats;
+
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -66,5 +69,9 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
 
         viewHolder.availabilityImageView.setImageResource(
                 ContactsHelper.getImageResourceFromUserPresence(chat.getUserToChatWith().getUserPresence().getUserPresenceType()));
+    }
+
+    public List<ActiveChat> getActiveChats() {
+        return activeChats;
     }
 }

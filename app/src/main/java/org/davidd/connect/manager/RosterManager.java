@@ -9,6 +9,7 @@ import org.davidd.connect.debug.L;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.model.UserPresence;
+import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
@@ -32,7 +33,6 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
 
     private List<User> userContacts = new ArrayList<>();
     private Set<UserContactsUpdatedListener> userContactsUpdatedListeners = new HashSet<>();
-    private Set<PresenceChangedListener> presenceChangedListeners = new HashSet<>();
     private Roster roster;
 
     private RosterManager() {
@@ -105,7 +105,10 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
     public void presenceChanged(Presence presence) {
         L.d(new Object() {}, presence.toString());
 
-        notifyPresenceChangedListeners(presence);
+        final User user = new User(new UserJIDProperties(presence.getFrom()));
+        user.setUserPresence(getUserPresenceForUser(user.getUserJIDProperties()));
+        EventBus.getDefault().post(new UserPresenceChangedMessage(user));
+
         contactsWereUpdated();
     }
 
@@ -121,20 +124,6 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         L.d(new Object() {});
 
         userContactsUpdatedListeners.remove(listener);
-    }
-
-    public void addPresenceChangedListener(PresenceChangedListener listener) {
-        L.d(new Object() {});
-
-        if (listener != null) {
-            presenceChangedListeners.add(listener);
-        }
-    }
-
-    public void removePresenceChangedListener(PresenceChangedListener listener) {
-        L.d(new Object() {});
-
-        presenceChangedListeners.remove(listener);
     }
 
     public List<User> getUserContacts() {
@@ -192,22 +181,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         });
     }
 
-    private void notifyPresenceChangedListeners(final Presence presence) {
-        ConnectApp.getMainHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                for (PresenceChangedListener listener : presenceChangedListeners) {
-                    listener.presenceChanged(presence);
-                }
-            }
-        });
-    }
-
     public interface UserContactsUpdatedListener {
         void userContactsUpdated(List<User> userContacts);
-    }
-
-    public interface PresenceChangedListener {
-        void presenceChanged(Presence presence);
     }
 }
