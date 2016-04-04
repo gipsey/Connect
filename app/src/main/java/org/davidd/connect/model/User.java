@@ -94,4 +94,24 @@ public class User {
     public void setUserPresence(UserPresence userPresence) {
         this.userPresence = userPresence;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        User user = (User) o;
+
+        return userJIDProperties.getNameAndDomain().equals(user.getUserJIDProperties().getNameAndDomain());
+    }
+
+    @Override
+    public int hashCode() {
+        return userJIDProperties.getNameAndDomain().hashCode();
+    }
 }

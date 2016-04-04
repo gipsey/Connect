@@ -2,27 +2,27 @@ package org.davidd.connect.model;
 
 public class ActiveChat {
 
-    private User sender;
-    private String lastMessage;
+    private User userToChatWith;
+    private MyMessage myMessage;
 
-    public ActiveChat(User sender, String lastMessage) {
-        this.sender = sender;
-        this.lastMessage = lastMessage;
+    public ActiveChat(User userToChatWith, MyMessage myMessage) {
+        this.userToChatWith = userToChatWith;
+        this.myMessage = myMessage;
     }
 
-    public User getSender() {
-        return sender;
+    public User getUserToChatWith() {
+        return userToChatWith;
     }
 
-    public void setSender(User sender) {
-        this.sender = sender;
+    public void setUserToChatWith(User userToChatWith) {
+        this.userToChatWith = userToChatWith;
     }
 
-    public String getLastMessage() {
-        return lastMessage;
+    public MyMessage getMyMessage() {
+        return myMessage;
     }
 
-    public void setLastMessage(String lastMessage) {
-        this.lastMessage = lastMessage;
+    public void setMyMessage(MyMessage myMessage) {
+        this.myMessage = myMessage;
     }
 }

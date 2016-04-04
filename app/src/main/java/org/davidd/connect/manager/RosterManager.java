@@ -17,6 +17,7 @@ import org.jivesoftware.smack.roster.packet.RosterPacket;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -156,7 +157,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         if (presence == null) {
             return null;
         } else {
-            return new UserPresence(roster.getPresence(userJIDProperties.getJID()));
+            return new UserPresence(presence);
         }
     }
 
@@ -185,7 +186,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
             @Override
             public void run() {
                 for (UserContactsUpdatedListener listener : userContactsUpdatedListeners) {
-                    listener.userContactsUpdated(userContacts);
+                    listener.userContactsUpdated(Collections.unmodifiableList(userContacts));
                 }
             }
         });

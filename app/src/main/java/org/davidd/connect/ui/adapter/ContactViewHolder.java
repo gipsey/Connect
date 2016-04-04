@@ -20,8 +20,8 @@ class ContactViewHolder {
     TextView userNameTextView;
     @Bind(R.id.status_textView)
     TextView statusTextView;
-    @Bind(R.id.availability_textView)
-    TextView availabilityTextView;
+    @Bind(R.id.rightBottom_textView)
+    TextView rightBottomTextView;
     @Bind(R.id.availability_imageView)
     ImageView availabilityImageView;
 

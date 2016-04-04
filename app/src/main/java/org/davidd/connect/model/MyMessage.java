@@ -1,6 +1,6 @@
 package org.davidd.connect.model;
 
-import android.support.annotation.NonNull;
+import org.jivesoftware.smack.packet.Message;
 
 import java.util.Date;
 
@@ -8,32 +8,31 @@ public class MyMessage {
 
     private User sender;
     private User receiver;
-    private String message;
     private Date date;
 
-    public MyMessage(@NonNull User sender, @NonNull User receiver, @NonNull String message) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.message = message;
-    }
+    private Message message;
 
-    public MyMessage(@NonNull User sender, @NonNull User receiver, @NonNull String message, Date date) {
+    public MyMessage(User sender, User receiver, Date date, Message message) {
         this.sender = sender;
         this.receiver = receiver;
-        this.message = message;
         this.date = date;
+        this.message = message;
     }
 
     public User getSender() {
         return sender;
     }
 
+    public void setSender(User sender) {
+        this.sender = sender;
+    }
+
     public User getReceiver() {
         return receiver;
     }
 
-    public String getMessage() {
-        return message;
+    public void setReceiver(User receiver) {
+        this.receiver = receiver;
     }
 
     public Date getDate() {
@@ -42,5 +41,13 @@ public class MyMessage {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    public Message getMessage() {
+        return message;
+    }
+
+    public void setMessage(Message message) {
+        this.message = message;
     }
 }

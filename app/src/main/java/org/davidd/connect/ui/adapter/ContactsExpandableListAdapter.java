@@ -123,7 +123,7 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
             viewHolder.statusTextView.setText(status);
         }
 
-        viewHolder.availabilityTextView.setText(user.getUserPresence().getUserPresenceType().getStatus());
+        viewHolder.rightBottomTextView.setText(user.getUserPresence().getUserPresenceType().getStatus());
         viewHolder.availabilityImageView.setImageResource(
                 ContactsHelper.getImageResourceFromUserPresence(user.getUserPresence().getUserPresenceType()));
     }

@@ -67,7 +67,7 @@ public class ChatAdapter extends ArrayAdapter<MyMessage> {
 
         void setup(int position) {
             senderTextView.setText(getItem(position).getSender().getUserJIDProperties().getNameAndDomain() + ":");
-            messageTextView.setText(getItem(position).getMessage());
+            messageTextView.setText(getItem(position).getMessage().getBody());
 
             boolean isItMe = UserManager.instance().getCurrentUser().getUserJIDProperties().getNameAndDomain()
                     .equals(getItem(position).getSender().getUserJIDProperties().getNameAndDomain());

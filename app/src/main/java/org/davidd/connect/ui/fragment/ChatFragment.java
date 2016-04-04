@@ -22,7 +22,6 @@ import org.davidd.connect.R;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.RosterManager;
-import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresenceType;
@@ -41,7 +40,6 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
-import static org.davidd.connect.util.DataUtils.getCurrentDate;
 
 public class ChatFragment extends Fragment implements
         Toolbar.OnMenuItemClickListener,
@@ -205,18 +203,14 @@ public class ChatFragment extends Fragment implements
     }
 
     @Override
-    public void messageReceived(Message message) {
+    public void messageReceived(MyMessage myMessage) {
         L.d(new Object() {});
-        if (!isMessageValid(message)) {
+        if (!isMessageValid(myMessage.getMessage())) {
             L.d(new Object() {}, "Message is empty");
             return;
         }
 
-        chatAdapter.add(new MyMessage(
-                userToChatWith,
-                UserManager.instance().getCurrentUser(),
-                message.getBody(),
-                getCurrentDate()));
+        chatAdapter.add(myMessage);
         chatAdapter.notifyDataSetChanged();
     }
 

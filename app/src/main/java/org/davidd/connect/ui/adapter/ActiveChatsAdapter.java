@@ -1,11 +1,13 @@
 package org.davidd.connect.ui.adapter;
 
 import android.content.Context;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
+import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.ActiveChat;
 import org.davidd.connect.util.DataUtils;
 
@@ -16,8 +18,8 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
     private LayoutInflater inflater;
     private int resource;
 
-    public ActiveChatsAdapter(Context context, int resource, List<ActiveChat> objects) {
-        super(context, resource, objects);
+    public ActiveChatsAdapter(Context context, int resource, List<ActiveChat> activeChats) {
+        super(context, resource, activeChats);
 
         this.resource = resource;
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -41,20 +43,28 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
     }
 
     private void setupContact(ContactViewHolder viewHolder, ActiveChat chat) {
-        viewHolder.firstLetterTextView.setText(String.valueOf(chat.getSender().getUserJIDProperties().getJID().charAt(0)));
-        viewHolder.userNameTextView.setText(chat.getSender().getUserJIDProperties().getNameAndDomain());
+        viewHolder.firstLetterTextView.setText(String.valueOf(chat.getUserToChatWith().getUserJIDProperties().getJID().charAt(0)));
+        viewHolder.userNameTextView.setText(chat.getUserToChatWith().getUserJIDProperties().getNameAndDomain());
 
-        String lastMessage = chat.getLastMessage();
-        if (DataUtils.isEmpty(lastMessage)) {
+        if (chat.getMyMessage() == null || DataUtils.isEmpty(chat.getMyMessage().getMessage().getBody())) {
             viewHolder.statusTextView.setVisibility(View.GONE);
             viewHolder.statusTextView.setText(null);
+
+            viewHolder.rightBottomTextView.setVisibility(View.GONE);
+            viewHolder.rightBottomTextView.setText(null);
         } else {
+            String lastMessage = chat.getMyMessage().getMessage().getBody();
+            if (chat.getMyMessage().getSender().equals(UserManager.instance().getCurrentUser())) {
+                lastMessage = "<b>You:</b>  " + lastMessage;
+            }
             viewHolder.statusTextView.setVisibility(View.VISIBLE);
-            viewHolder.statusTextView.setText(lastMessage);
+            viewHolder.statusTextView.setText(Html.fromHtml(lastMessage));
+
+            viewHolder.rightBottomTextView.setVisibility(View.VISIBLE);
+            viewHolder.rightBottomTextView.setText("TODOmin");
         }
 
-        viewHolder.availabilityTextView.setText(chat.getSender().getUserPresence().getUserPresenceType().getStatus());
         viewHolder.availabilityImageView.setImageResource(
-                ContactsHelper.getImageResourceFromUserPresence(chat.getSender().getUserPresence().getUserPresenceType()));
+                ContactsHelper.getImageResourceFromUserPresence(chat.getUserToChatWith().getUserPresence().getUserPresenceType()));
     }
 }

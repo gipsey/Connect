@@ -10,18 +10,18 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.davidd.connect.R;
-import org.davidd.connect.manager.RosterManager;
+import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.model.ActiveChat;
-import org.davidd.connect.model.User;
-import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.ui.adapter.ActiveChatsAdapter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ActiveChatsFragment extends ControlActivityFragment {
+public class ActiveChatsFragment extends ControlActivityFragment implements
+        MyChatManager.ChatUpdatedListener {
 
     @Bind(R.id.active_chats_listView)
     ListView listView;
@@ -57,37 +57,40 @@ public class ActiveChatsFragment extends ControlActivityFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                navigateToChatListener.navigateToChat(chatsAdapter.getItem(position).getSender());
+                navigateToChatListener.navigateToChat(chatsAdapter.getItem(position).getUserToChatWith());
             }
         });
     }
 
     public void onStart() {
         super.onStart();
+        MyChatManager.instance().addChatUpdatedListener(this);
+    }
 
-        // TODO mock data
-        ActiveChat chat1 = new ActiveChat(
-                new User(new UserJIDProperties("qwe@is-a-furry.org"),
-                        RosterManager.instance().getRosterEntryForUser(new UserJIDProperties("qwe@is-a-furry.org")),
-                        RosterManager.instance().getUserPresenceForUser(new UserJIDProperties("qwe@is-a-furry.org"))),
-                "malacka");
-
-        ActiveChat chat2 = new ActiveChat(
-                new User(new UserJIDProperties("malacka@jancsika.com"),
-                        RosterManager.instance().getRosterEntryForUser(new UserJIDProperties("malacka@jancsika.com")),
-                        RosterManager.instance().getUserPresenceForUser(new UserJIDProperties("malacka@jancsika.com"))),
-                null);
-        chatsAdapter.add(chat1);
-        chatsAdapter.add(chat2);
-        chatsAdapter.notifyDataSetChanged();
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateActiveChats(MyChatManager.instance().getActiveChats());
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        MyChatManager.instance().removeChatUpdatedListener(this);
     }
 
     @Override
     public void onPagesSelected() {
+    }
+
+    @Override
+    public void chatsUpdated(List<ActiveChat> activeChats) {
+        updateActiveChats(activeChats);
+    }
+
+    private void updateActiveChats(List<ActiveChat> activeChats) {
+        chatsAdapter.clear();
+        chatsAdapter.addAll(activeChats);
+        chatsAdapter.notifyDataSetChanged();
     }
 }

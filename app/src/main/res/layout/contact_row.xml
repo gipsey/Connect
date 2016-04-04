@@ -76,7 +76,7 @@
             android:contentDescription="availability"/>
 
         <TextView
-            android:id="@+id/availability_textView"
+            android:id="@+id/rightBottom_textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
