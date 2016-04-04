@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
+import com.ocpsoft.pretty.time.PrettyTime;
+
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.ActiveChat;
 import org.davidd.connect.util.DataUtils;
@@ -64,7 +66,7 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
             viewHolder.statusTextView.setText(Html.fromHtml(lastMessage));
 
             viewHolder.rightBottomTextView.setVisibility(View.VISIBLE);
-            viewHolder.rightBottomTextView.setText("TODOmin");
+            viewHolder.rightBottomTextView.setText(new PrettyTime().format(chat.getMyMessage().getDate()));
         }
 
         viewHolder.availabilityImageView.setImageResource(
