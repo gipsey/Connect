@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.davidd.connect.R;
+import org.davidd.connect.ui.activity.ControlActivity;
 import org.davidd.connect.ui.adapter.ControlPagerAdapter;
 
 import butterknife.Bind;
@@ -26,6 +27,18 @@ public class ControlFragment extends Fragment {
     @Bind(R.id.control_activity_view_pager)
     protected ViewPager mainViewPager;
 
+    private int fragmentIndexToShow;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        fragmentIndexToShow = getArguments().getInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, -1);
+        if (fragmentIndexToShow < 0 || fragmentIndexToShow >= ControlPagerAdapter.NUMBER_OF_TABS) {
+            fragmentIndexToShow = VIEW_PAGER_DEFAULT_PAGE_POSITION;
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -39,7 +52,7 @@ public class ControlFragment extends Fragment {
         ControlPagerAdapter controlPagerAdapter = new ControlPagerAdapter(getActivity(), getChildFragmentManager());
 
         mainViewPager.setAdapter(controlPagerAdapter);
-        mainViewPager.setCurrentItem(VIEW_PAGER_DEFAULT_PAGE_POSITION);
+        mainViewPager.setCurrentItem(fragmentIndexToShow);
 
         mainTabLayout.setupWithViewPager(mainViewPager);
 

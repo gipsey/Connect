@@ -12,14 +12,21 @@ import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
 public class ControlActivity extends NavigationActivity implements NavigateToChatListener {
 
+    public static final String CONTROL_FRAGMENT_ITEM_BUNDLE_KEY = "ControlFragmentItemBundleKey";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(R.string.control_activity_title);
 
         if (savedInstanceState == null) {
+            ControlFragment controlFragment = new ControlFragment();
+            Bundle bundle = new Bundle();
+            bundle.putInt(CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, getIntent().getIntExtra(CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, -1));
+            controlFragment.setArguments(bundle);
+
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.drawer_frame_layout, new ControlFragment(), ControlFragment.TAG)
+                    .add(R.id.drawer_frame_layout, controlFragment, ControlFragment.TAG)
                     .commit();
         }
     }

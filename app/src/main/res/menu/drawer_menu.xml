@@ -9,6 +9,10 @@
         <item
             android:id="@+id/drawer_active_chats"
             android:title="@string/drawer_active_chats"/>
+
+        <item
+            android:id="@+id/drawer_contacts"
+            android:title="@string/drawer_contacts"/>
     </group>
 
     <item

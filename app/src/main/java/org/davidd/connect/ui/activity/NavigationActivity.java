@@ -1,7 +1,7 @@
 package org.davidd.connect.ui.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,6 +17,8 @@ import android.widget.TextView;
 import org.davidd.connect.R;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.UserManager;
+import org.davidd.connect.util.ActivityUtils;
+import org.davidd.connect.util.DataUtils;
 
 public abstract class NavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -45,7 +47,7 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
         drawerHeaderMainLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO navigate to user screen
+                navigateToMyProfile();
             }
         });
 
@@ -67,12 +69,21 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
+        Bundle bundle;
+
         switch (item.getItemId()) {
             case R.id.drawer_my_profile:
-                L.d(new Object() {}, "drawer_my_profile");
+                navigateToMyProfile();
                 break;
             case R.id.drawer_active_chats:
-                L.d(new Object() {}, "drawer_active_chats");
+                bundle = new Bundle();
+                bundle.putInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, 0);
+                ActivityUtils.navigate(this, ControlActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
+                break;
+            case R.id.drawer_contacts:
+                bundle = new Bundle();
+                bundle.putInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, 1);
+                ActivityUtils.navigate(this, ControlActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
                 break;
             case R.id.drawer_settings:
                 L.d(new Object() {}, "drawer_settings");
@@ -86,7 +97,10 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
         return true;
     }
 
-    protected void setTitle(@NonNull String title) {
-        toolbar.setTitle(title);
+    private void navigateToMyProfile() {
+        Bundle bundle = new Bundle();
+        bundle.putString(UserActivity.USER_BUNDLE_TAG,
+                DataUtils.createGsonWithExcludedFields().toJson(UserManager.instance().getCurrentUser()));
+        ActivityUtils.navigate(this, UserActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
     }
 }

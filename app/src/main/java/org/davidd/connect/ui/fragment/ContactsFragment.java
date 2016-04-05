@@ -107,16 +107,16 @@ public class ContactsFragment extends ControlActivityFragment implements RosterM
     }
 
     private void updateContactGroups(List<User> userContacts) {
-        for (User user : userContacts) {
+        for (int i = 0; i < userContacts.size(); i++) {
             String groupName;
-            if (user.getRosterEntry().getGroups().isEmpty()) {
+            if (userContacts.get(i).getRosterEntry().getGroups().isEmpty()) {
                 groupName = getString(R.string.unfiled_group_name);
             } else {
-                groupName = user.getRosterEntry().getGroups().get(0).getName();
+                groupName = userContacts.get(i).getRosterEntry().getGroups().get(0).getName();
             }
 
             ContactGroup group = getGroupFroName(groupName);
-            group.getUsers().add(user);
+            group.getUsers().add(userContacts.get(i));
         }
     }
 
