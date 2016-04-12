@@ -36,7 +36,7 @@
                     android:layout_width="56dp"
                     android:layout_height="56dp"
                     android:layout_gravity="bottom"
-                    android:layout_margin="8dp"/>
+                    android:layout_margin="@dimen/spacingNormal"/>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -46,7 +46,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="8dp"
+                        android:layout_margin="@dimen/spacingNormal"
                         android:textAppearance="@style/CollapsingToolbarTextAppearance"
                         android:visibility="invisible"/>
 
@@ -55,7 +55,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom"
-                        android:layout_margin="8dp"
+                        android:layout_margin="@dimen/spacingNormal"
                         android:ellipsize="end"
                         android:singleLine="true"/>
                 </LinearLayout>
@@ -79,96 +79,93 @@
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="match_parent"
+            android:layout_marginEnd="@dimen/spacingLarge"
+            android:layout_marginLeft="@dimen/spacingLarge"
+            android:layout_marginRight="@dimen/spacingLarge"
+            android:layout_marginStart="@dimen/spacingLarge"
+            android:divider="?android:listDivider"
+            android:orientation="vertical"
+            android:showDividers="middle">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginStart="16dp"
-                android:divider="@color/gray_dark"
-                android:orientation="vertical"
-                android:showDividers="middle">
+                android:layout_marginBottom="@dimen/spacingLarge"
+                android:layout_marginTop="@dimen/spacingLarge"
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/frameLayout_name_textView"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginTop="16dp"
-                    android:orientation="vertical">
+                    android:paddingBottom="@dimen/spacingTiny"
+                    android:paddingTop="@dimen/spacingTiny"
+                    android:textSize="@dimen/textSizeHuge"
+                    android:textStyle="bold"/>
 
-                    <TextView
-                        android:id="@+id/frameLayout_name_textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="2dp"
-                        android:paddingTop="2dp"
-                        android:textSize="17sp"
-                        android:textStyle="bold"/>
-
-                    <TextView
-                        android:id="@+id/frameLayout_JID_textView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="2dp"
-                        android:paddingTop="2dp"
-                        android:textSize="13sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/frameLayout_JID_textView"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginTop="16dp"
-                    android:orientation="vertical">
-
-                    <android.support.v7.widget.AppCompatSpinner
-                        android:id="@+id/frameLayout_presence_spinner"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="4dp"
-                        android:paddingTop="4dp">
-
-                    </android.support.v7.widget.AppCompatSpinner>
-
-                    <EditText
-                        android:id="@+id/frameLayout_status_editText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textCapSentences"
-                        android:maxLength="256"
-                        android:paddingBottom="4dp"
-                        android:paddingTop="4dp"
-                        android:singleLine="false"
-                        android:textSize="13sp"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginTop="16dp"
-                    android:orientation="vertical">
-
-                    <Button
-                        android:id="@+id/frameLayout_logOut_button"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:paddingBottom="4dp"
-                        android:paddingTop="4dp"
-                        android:textAllCaps="false"
-                        android:textSize="13sp"/>
-                </LinearLayout>
-
+                    android:paddingBottom="@dimen/spacingTiny"
+                    android:paddingTop="@dimen/spacingTiny"
+                    android:textSize="@dimen/textSizeLarge"/>
             </LinearLayout>
 
-        </FrameLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacingLarge"
+                android:layout_marginTop="@dimen/spacingLarge"
+                android:orientation="vertical">
+
+                <android.support.v7.widget.AppCompatSpinner
+                    android:id="@+id/frameLayout_presence_spinner"
+                    style="@style/Widget.AppCompat.Spinner.Underlined"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="@dimen/spacingLarge"
+                    android:paddingTop="@dimen/spacingLarge"/>
+
+                <EditText
+                    android:id="@+id/frameLayout_status_editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Set your status..."
+                    android:imeActionId="@+id/frameLayout_status_editText_imeId"
+                    android:imeOptions="actionGo"
+                    android:inputType="textCapSentences"
+                    android:maxLength="256"
+                    android:paddingBottom="@dimen/spacingLarge"
+                    android:paddingTop="@dimen/spacingLarge"
+                    android:singleLine="false"
+                    android:textSize="@dimen/textSizeLarge"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacingLarge"
+                android:layout_marginTop="@dimen/spacingLarge"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/frameLayout_logOut_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:paddingBottom="@dimen/spacingSmall"
+                    android:paddingTop="@dimen/spacingSmall"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/textSizeLarge"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
     </android.support.v4.widget.NestedScrollView>
 
 </android.support.design.widget.CoordinatorLayout>

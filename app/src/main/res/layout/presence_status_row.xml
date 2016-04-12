@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:padding="8dp">
+                android:padding="@dimen/spacingNormal">
 
     <TextView
         android:id="@+id/status_name"
@@ -11,12 +11,13 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
+        android:layout_margin="@dimen/spacingSmall"
         android:ellipsize="end"
         android:gravity="center_vertical"
-        android:maxEms="15"
+        android:maxEms="20"
         android:singleLine="true"
         android:textAllCaps="false"
-        android:textSize="13sp"/>
+        android:textSize="@dimen/textSizeLarge"/>
 
     <ImageView
         android:id="@+id/status_icon"
@@ -25,6 +26,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
+        android:layout_margin="@dimen/spacingSmall"
         android:gravity="center_vertical"/>
 
 </RelativeLayout>
