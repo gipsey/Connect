@@ -5,6 +5,7 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -20,6 +21,7 @@ import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresence;
 import org.davidd.connect.ui.adapter.PresenceStatusAdapter;
+import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.BitmapUtil;
 import org.davidd.connect.util.DataUtils;
 import org.davidd.connect.util.DisplayUtils;
@@ -91,23 +93,25 @@ public class UserActivity extends AppCompatActivity {
         nameTextView.setText(user.getUserJIDProperties().getName());
         JIDTextView.setText(user.getUserJIDProperties().getJID());
 
-        if (DataUtils.isEmpty(userPresence.getPresence().getStatus())) {
-            statusEditText.setVisibility(View.VISIBLE);
+        if (!DataUtils.isEmpty(userPresence.getPresence().getStatus())) {
             statusEditText.setText(userPresence.getPresence().getStatus());
         } else {
-            statusEditText.setVisibility(View.GONE);
+            if (itIsTheCurrentUser) {
+                statusEditText.setText(Html.fromHtml("<i>Set your status...</i>"));
+            } else {
+                statusEditText.setText(Html.fromHtml("<i>No status added...</i>"));
+            }
         }
+
+        PresenceStatusAdapter adapter = new PresenceStatusAdapter(this);
+        presenceSpinner.setAdapter(adapter);
+        presenceSpinner.setSelection(userPresence.getUserPresenceType().ordinal());
 
         if (itIsTheCurrentUser) {
             collapsingToolbarLayout.setTitle("It's me!");
 
-            PresenceStatusAdapter adapter = new PresenceStatusAdapter(this);
-            presenceSpinner.setAdapter(adapter);
+            statusEditText.setCursorVisible(false);
 
-            presenceSpinner.setEnabled(true);
-            statusEditText.setEnabled(true);
-
-            logOutButton.setVisibility(View.VISIBLE);
             logOutButton.setText("Log out");
         } else {
             collapsingToolbarLayout.setTitle(user.getUserJIDProperties().getName());
@@ -117,13 +121,11 @@ public class UserActivity extends AppCompatActivity {
 
             logOutButton.setVisibility(View.GONE);
         }
-
-        presenceSpinner.setSelection(userPresence.getUserPresenceType().ordinal());
-        statusEditText.setCursorVisible(false);
     }
 
     @OnClick(R.id.frameLayout_status_editText)
     void onEditTextClick(View view) {
+        statusEditText.selectAll();
         statusEditText.setCursorVisible(true);
     }
 
@@ -140,6 +142,8 @@ public class UserActivity extends AppCompatActivity {
 
     @OnClick(R.id.frameLayout_logOut_button)
     void onLogOut(View view) {
-        Toast.makeText(this, "Log out", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Bye " + user.getUserJIDProperties().getName() + "!", Toast.LENGTH_SHORT).show();
+        UserManager.instance().logOut();
+        ActivityUtils.navigate(this, SplashActivity.class, true);
     }
 }

@@ -35,7 +35,7 @@ public class UserManager {
         return getCurrentUser() != null;
     }
 
-    public void clearUserData() {
+    public void logOut() {
         currentUser = null;
         PreferencesManager.instance().clearUser();
     }

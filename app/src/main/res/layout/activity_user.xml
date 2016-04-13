@@ -134,7 +134,6 @@
                     android:id="@+id/frameLayout_status_editText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Set your status..."
                     android:imeActionId="@+id/frameLayout_status_editText_imeId"
                     android:imeOptions="actionGo"
                     android:inputType="textCapSentences"

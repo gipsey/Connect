@@ -80,7 +80,7 @@ public class SplashActivity extends ConnectionActivity {
                 "Sign out", new Runnable() {
                     @Override
                     public void run() {
-                        UserManager.instance().clearUserData();
+                        UserManager.instance().logOut();
                         ActivityUtils.navigate(SplashActivity.this, LoginActivity.class, true);
                     }
                 });

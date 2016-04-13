@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +29,10 @@ import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresenceType;
 import org.davidd.connect.ui.activity.ChatActivity;
+import org.davidd.connect.ui.activity.UserActivity;
 import org.davidd.connect.ui.adapter.ChatAdapter;
 import org.davidd.connect.ui.adapter.ContactsHelper;
+import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -45,7 +49,6 @@ import butterknife.OnEditorAction;
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
 public class ChatFragment extends Fragment implements
-        Toolbar.OnMenuItemClickListener,
         MyChatManager.MessageReceivedListener {
 
     public static final String TAG = ChatFragment.class.getName();
@@ -81,6 +84,7 @@ public class ChatFragment extends Fragment implements
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
         userToChatWith = createGsonWithExcludedFields().fromJson(
                 getArguments().getString(ChatActivity.USER_TO_CHAT_WITH), User.class);
@@ -88,6 +92,11 @@ public class ChatFragment extends Fragment implements
                 RosterManager.instance().getRosterEntryForUser(userToChatWith.getUserJIDProperties()));
         userToChatWith.setUserPresence(
                 RosterManager.instance().getUserPresenceForUser(userToChatWith.getUserJIDProperties()));
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.chat_menu, menu);
     }
 
     @Nullable
@@ -102,8 +111,20 @@ public class ChatFragment extends Fragment implements
 
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
 
-        toolbar.inflateMenu(R.menu.toolbar_chat_menu);
-        toolbar.setOnMenuItemClickListener(this);
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.user_profile:
+                        Bundle bundle = new Bundle();
+                        bundle.putString(UserActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(userToChatWith));
+                        ActivityUtils.navigate(getActivity(), UserActivity.class, bundle, false);
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+        });
         toolbar.setNavigationIcon(R.drawable.ic_arrow_left_white);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -217,10 +238,5 @@ public class ChatFragment extends Fragment implements
     private boolean isMessageValid(Message message) {
         return (message.getType() == Message.Type.chat || message.getType() == Message.Type.normal)
                 && !DataUtils.isEmpty(message.getBody());
-    }
-
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
-        return false;
     }
 }
