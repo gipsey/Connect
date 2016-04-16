@@ -9,6 +9,7 @@ import org.davidd.connect.debug.L;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.model.UserPresence;
+import org.davidd.connect.model.UserPresenceType;
 import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.roster.Roster;
@@ -110,6 +111,35 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         EventBus.getDefault().post(new UserPresenceChangedMessage(user));
 
         contactsWereUpdated();
+    }
+
+    public void sendPresence(UserPresenceType userPresence, String status) throws Exception {
+        Presence.Type type = null;
+        Presence.Mode mode = null;
+        switch (userPresence) {
+            case AVAILABLE:
+                type = Presence.Type.available;
+                mode = Presence.Mode.available;
+                break;
+            case AWAY:
+                type = Presence.Type.available;
+                mode = Presence.Mode.away;
+                break;
+            case DO_NOT_DISTURB:
+                type = Presence.Type.available;
+                mode = Presence.Mode.dnd;
+                break;
+            default:
+                type = Presence.Type.unavailable;
+        }
+
+        Presence presence = new Presence(type);
+        if (mode != null) {
+            presence.setMode(mode);
+        }
+        presence.setStatus(status);
+
+        MyConnectionManager.instance().sendPresence(presence);
     }
 
     public void addUserContactsUpdatedListener(UserContactsUpdatedListener listener) {

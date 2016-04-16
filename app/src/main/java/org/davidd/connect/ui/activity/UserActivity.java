@@ -5,10 +5,12 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.Html;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,10 +18,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.davidd.connect.R;
+import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresence;
+import org.davidd.connect.model.UserPresenceType;
 import org.davidd.connect.ui.adapter.PresenceStatusAdapter;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.BitmapUtil;
@@ -33,7 +37,7 @@ import butterknife.OnEditorAction;
 
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
-public class UserActivity extends AppCompatActivity {
+public class UserActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     public static final String USER_BUNDLE_TAG = "UserBundleTag";
 
@@ -64,8 +68,12 @@ public class UserActivity extends AppCompatActivity {
     @Bind(R.id.frameLayout_logOut_button)
     Button logOutButton;
 
+    private PresenceStatusAdapter adapter;
+
     private User user;
-    private boolean itIsTheCurrentUser;
+
+    private UserPresenceType previousPresenceType;
+    private String previousStatus;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +92,7 @@ public class UserActivity extends AppCompatActivity {
         });
 
         user = createGsonWithExcludedFields().fromJson(getIntent().getStringExtra(USER_BUNDLE_TAG), User.class);
-        itIsTheCurrentUser = user.equals(UserManager.instance().getCurrentUser());
+        boolean itIsTheCurrentUser = user.equals(UserManager.instance().getCurrentUser());
 
         UserPresence userPresence = RosterManager.instance().getUserPresenceForUser(user.getUserJIDProperties());
 
@@ -93,25 +101,23 @@ public class UserActivity extends AppCompatActivity {
         nameTextView.setText(user.getUserJIDProperties().getName());
         JIDTextView.setText(user.getUserJIDProperties().getJID());
 
-        if (!DataUtils.isEmpty(userPresence.getPresence().getStatus())) {
-            statusEditText.setText(userPresence.getPresence().getStatus());
+        if (itIsTheCurrentUser) {
+            statusEditText.setHint(Html.fromHtml("<i>Set your status...</i>"));
         } else {
-            if (itIsTheCurrentUser) {
-                statusEditText.setText(Html.fromHtml("<i>Set your status...</i>"));
-            } else {
-                statusEditText.setText(Html.fromHtml("<i>No status added...</i>"));
-            }
+            statusEditText.setHint(Html.fromHtml("<i>No status added...</i>"));
         }
 
-        PresenceStatusAdapter adapter = new PresenceStatusAdapter(this);
+        if (!DataUtils.isEmpty(userPresence.getPresence().getStatus())) {
+            statusEditText.setText(userPresence.getPresence().getStatus());
+        }
+
+        adapter = new PresenceStatusAdapter(this);
         presenceSpinner.setAdapter(adapter);
-        presenceSpinner.setSelection(userPresence.getUserPresenceType().ordinal());
+        presenceSpinner.setSelection(userPresence.getUserPresenceType().ordinal(), true);
 
         if (itIsTheCurrentUser) {
             collapsingToolbarLayout.setTitle("It's me!");
-
             statusEditText.setCursorVisible(false);
-
             logOutButton.setText("Log out");
         } else {
             collapsingToolbarLayout.setTitle(user.getUserJIDProperties().getName());
@@ -121,6 +127,11 @@ public class UserActivity extends AppCompatActivity {
 
             logOutButton.setVisibility(View.GONE);
         }
+
+        presenceSpinner.setOnItemSelectedListener(this);
+
+        previousPresenceType = (UserPresenceType) presenceSpinner.getSelectedItem();
+        previousStatus = statusEditText.getText().toString();
     }
 
     @OnClick(R.id.frameLayout_status_editText)
@@ -132,7 +143,7 @@ public class UserActivity extends AppCompatActivity {
     @OnEditorAction(R.id.frameLayout_status_editText)
     boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
         if ((keyEvent != null && keyEvent.getAction() == R.id.frameLayout_status_editText_imeId) || id == EditorInfo.IME_ACTION_GO) {
-            Toast.makeText(this, statusEditText.getText(), Toast.LENGTH_SHORT).show();
+            sendPresence((UserPresenceType) presenceSpinner.getSelectedItem(), statusEditText.getText());
             statusEditText.setCursorVisible(false);
             DisplayUtils.hideSoftKeyboard(this, statusEditText);
             return true;
@@ -143,7 +154,37 @@ public class UserActivity extends AppCompatActivity {
     @OnClick(R.id.frameLayout_logOut_button)
     void onLogOut(View view) {
         Toast.makeText(this, "Bye " + user.getUserJIDProperties().getName() + "!", Toast.LENGTH_SHORT).show();
+        MyConnectionManager.instance().disconnect();
         UserManager.instance().logOut();
         ActivityUtils.navigate(this, SplashActivity.class, true);
+    }
+
+    private void sendPresence(UserPresenceType item, Editable text) {
+        try {
+            RosterManager.instance().sendPresence(item, text.toString());
+            previousPresenceType = item;
+            previousStatus = text.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            Toast.makeText(this, "Couldn't set your presence. Check your connection!", Toast.LENGTH_LONG).show();
+
+            presenceSpinner.setOnItemSelectedListener(null);
+
+            presenceSpinner.setSelection(previousPresenceType.ordinal(), true);
+            statusEditText.setText(previousStatus);
+
+            presenceSpinner.setOnItemSelectedListener(this);
+        }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        sendPresence((UserPresenceType) adapter.getItem(position), statusEditText.getText());
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

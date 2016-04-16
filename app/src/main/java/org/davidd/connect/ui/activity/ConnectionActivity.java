@@ -9,7 +9,9 @@ import org.davidd.connect.connection.ErrorMessage;
 import org.davidd.connect.connection.MyConnectionListener;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.model.User;
+import org.davidd.connect.model.UserPresenceType;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
 import org.davidd.connect.util.DisplayUtils;
@@ -42,6 +44,11 @@ public abstract class ConnectionActivity extends Activity implements MyConnectio
     public void onAuthenticationSuccess() {
         L.d(new Object() {});
 
+        try {
+            RosterManager.instance().sendPresence(UserPresenceType.AVAILABLE, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         ActivityUtils.navigate(this, ControlActivity.class, null, Intent.FLAG_ACTIVITY_CLEAR_TOP, true);
     }
 

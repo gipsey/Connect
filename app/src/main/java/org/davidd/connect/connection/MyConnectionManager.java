@@ -17,6 +17,7 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat.ChatManager;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
@@ -120,7 +121,7 @@ public class MyConnectionManager implements ConnectionListener {
         builder.setUsernameAndPassword(JIDProperties.getName(), password);
         builder.setServiceName(JIDProperties.getDomain());
         builder.setHost(JIDProperties.getDomain());
-        builder.setSendPresence(true);
+        builder.setSendPresence(false);
 
         xmppTcpConnection = new XMPPTCPConnection(builder.build());
         xmppTcpConnection.addConnectionListener(this);
@@ -206,6 +207,10 @@ public class MyConnectionManager implements ConnectionListener {
         }.execute();
     }
 
+    public void disconnect() {
+        xmppTcpConnection.disconnect();
+    }
+
     /**
      * Invoke this only if the connection is already made and it's non anonymous.
      */
@@ -229,6 +234,10 @@ public class MyConnectionManager implements ConnectionListener {
                 }
             }
         }.execute();
+    }
+
+    public void sendPresence(Presence presence) throws Exception {
+        xmppTcpConnection.sendStanza(presence);
     }
 
     @Override
