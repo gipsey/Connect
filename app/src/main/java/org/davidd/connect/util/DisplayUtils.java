@@ -1,5 +1,6 @@
 package org.davidd.connect.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.Nullable;
@@ -51,6 +52,10 @@ public class DisplayUtils {
     public static void showOkAlertDialog(Context context, String message,
                                          String okButtonText, @Nullable final Runnable actionOk,
                                          String negativeButtonText, @Nullable final Runnable actionNegative) {
+        if (context == null || ((Activity) context).isFinishing()) {
+            return;
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         builder.setMessage(message);

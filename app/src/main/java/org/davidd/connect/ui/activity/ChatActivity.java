@@ -21,8 +21,7 @@ public class ChatActivity extends AppCompatActivity {
             bundle.putString(USER_TO_CHAT_WITH, getIntent().getStringExtra(USER_TO_CHAT_WITH));
             chatFragment.setArguments(bundle);
 
-            getSupportFragmentManager()
-                    .beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.frame_layout, chatFragment, ChatFragment.TAG)
                     .commit();
         }

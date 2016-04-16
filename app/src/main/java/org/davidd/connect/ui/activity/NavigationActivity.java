@@ -28,6 +28,7 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.navigation_drawer_layout);
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -56,6 +57,7 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
 
         TextView userNameTextView = (TextView) drawerHeaderMainLayout.findViewById(R.id.user_name_textView);
         userNameTextView.setText(UserManager.instance().getCurrentUser().getUserJIDProperties().getJID());
+
     }
 
     @Override
@@ -63,27 +65,21 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            finish();
         }
     }
 
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        Bundle bundle;
-
         switch (item.getItemId()) {
             case R.id.drawer_my_profile:
                 navigateToMyProfile();
                 break;
             case R.id.drawer_active_chats:
-                bundle = new Bundle();
-                bundle.putInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, 0);
-                ActivityUtils.navigate(this, ControlActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
+                navigateToControlActivity(0);
                 break;
             case R.id.drawer_contacts:
-                bundle = new Bundle();
-                bundle.putInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, 1);
-                ActivityUtils.navigate(this, ControlActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
+                navigateToControlActivity(1);
                 break;
             case R.id.drawer_settings:
                 L.d(new Object() {}, "drawer_settings");
@@ -102,5 +98,16 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
         bundle.putString(UserActivity.USER_BUNDLE_TAG,
                 DataUtils.createGsonWithExcludedFields().toJson(UserManager.instance().getCurrentUser()));
         ActivityUtils.navigate(this, UserActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
+    }
+
+    private void navigateToControlActivity(int fragmentIndexToShow) {
+        if (this instanceof ControlActivity) {
+            ControlActivity controlActivity = (ControlActivity) this;
+            controlActivity.showFragmentByIndex(fragmentIndexToShow);
+        } else {
+            Bundle bundle = new Bundle();
+            bundle.putInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, fragmentIndexToShow);
+            ActivityUtils.navigate(this, ControlActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
+        }
     }
 }

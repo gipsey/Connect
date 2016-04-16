@@ -14,21 +14,30 @@ public class ControlActivity extends NavigationActivity implements NavigateToCha
 
     public static final String CONTROL_FRAGMENT_ITEM_BUNDLE_KEY = "ControlFragmentItemBundleKey";
 
+    private ControlFragment controlFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle(R.string.control_activity_title);
 
         if (savedInstanceState == null) {
-            ControlFragment controlFragment = new ControlFragment();
+            setTitle(R.string.control_activity_title);
+            controlFragment = new ControlFragment();
             Bundle bundle = new Bundle();
             bundle.putInt(CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, getIntent().getIntExtra(CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, -1));
             controlFragment.setArguments(bundle);
 
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.drawer_frame_layout, controlFragment, ControlFragment.TAG)
+                    .replace(R.id.drawer_frame_layout, controlFragment, ControlFragment.TAG)
                     .commit();
+        } else {
+            controlFragment = (ControlFragment) getSupportFragmentManager().findFragmentByTag(ControlFragment.TAG);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 
     @Override
@@ -39,5 +48,9 @@ public class ControlActivity extends NavigationActivity implements NavigateToCha
 
         ActivityUtils.navigate(this, ChatActivity.class, bundle,
                 Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP, false);
+    }
+
+    public void showFragmentByIndex(int index) {
+        controlFragment.showFragmentByIndex(index);
     }
 }

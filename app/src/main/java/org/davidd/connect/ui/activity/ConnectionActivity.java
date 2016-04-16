@@ -1,6 +1,7 @@
 package org.davidd.connect.ui.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 
 import org.davidd.connect.R;
@@ -41,7 +42,7 @@ public abstract class ConnectionActivity extends Activity implements MyConnectio
     public void onAuthenticationSuccess() {
         L.d(new Object() {});
 
-        ActivityUtils.navigate(this, ControlActivity.class, true);
+        ActivityUtils.navigate(this, ControlActivity.class, null, Intent.FLAG_ACTIVITY_CLEAR_TOP, true);
     }
 
     @Override
