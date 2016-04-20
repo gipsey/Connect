@@ -5,6 +5,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.davidd.connect.ConnectApp;
+import org.davidd.connect.connection.packetListener.AcceptAllStanzaFilter;
+import org.davidd.connect.connection.packetListener.AllPacketListener;
+import org.davidd.connect.connection.packetListener.UserLocationPacketListener;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.model.UserJIDProperties;
@@ -97,7 +100,7 @@ public class MyConnectionManager implements ConnectionListener {
         // Tear down the connection if exists, because we allow only one connection at the same time
         if (xmppTcpConnection != null) {
             L.d(new Object() {}, "Disconnection started");
-            disconnect(new MyDisconnectionListener() {
+            disconnectAsync(new MyDisconnectionListener() {
                 @Override
                 public void onDisconnect() {
                     createConnection(JIDProperties, password, connectionListener);
@@ -187,8 +190,9 @@ public class MyConnectionManager implements ConnectionListener {
         return builder;
     }
 
-    private void disconnect(final MyDisconnectionListener disconnectionListener) {
+    private void disconnectAsync(final MyDisconnectionListener disconnectionListener) {
         xmppTcpConnection.removeConnectionListener(this);
+        tearDownManagersOnConnectionError();
 
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -207,7 +211,8 @@ public class MyConnectionManager implements ConnectionListener {
         }.execute();
     }
 
-    public void disconnect() {
+    public void disconnectSync() {
+        tearDownManagersOnConnectionError();
         xmppTcpConnection.disconnect();
     }
 
@@ -334,15 +339,19 @@ public class MyConnectionManager implements ConnectionListener {
     private void initializeManagersOnConnectionSuccess() {
         chatManager = ChatManager.getInstanceFor(xmppTcpConnection);
         chatManager.addChatListener(MyChatManager.instance());
+
+        xmppTcpConnection.addAsyncStanzaListener(AllPacketListener.instance(), new AcceptAllStanzaFilter());
+        xmppTcpConnection.addAsyncStanzaListener(UserLocationPacketListener.instance(), new AcceptAllStanzaFilter()); // TODO
     }
 
     private void tearDownManagersOnConnectionError() {
-        // TODO tear down the managers and call this method when
-        // TODO first lets see how the smack handles it
         //     if (chatManager != null) {
         //        chatManager.removeChatListener(MyChatManager.instance());
         //        chatManager = null;
         //     }
+
+        xmppTcpConnection.removeAsyncStanzaListener(AllPacketListener.instance());
+        xmppTcpConnection.removeAsyncStanzaListener(UserLocationPacketListener.instance());
     }
 
     /**

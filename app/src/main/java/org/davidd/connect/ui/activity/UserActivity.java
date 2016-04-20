@@ -154,7 +154,7 @@ public class UserActivity extends AppCompatActivity implements AdapterView.OnIte
     @OnClick(R.id.frameLayout_logOut_button)
     void onLogOut(View view) {
         Toast.makeText(this, "Bye " + user.getUserJIDProperties().getName() + "!", Toast.LENGTH_SHORT).show();
-        MyConnectionManager.instance().disconnect();
+        MyConnectionManager.instance().disconnectSync();
         UserManager.instance().logOut();
         ActivityUtils.navigate(this, SplashActivity.class, true);
     }
