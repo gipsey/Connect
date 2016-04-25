@@ -18,6 +18,8 @@ import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.chat.ChatManagerListener;
 import org.jivesoftware.smack.chat.ChatMessageListener;
 import org.jivesoftware.smack.packet.Message;
+import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,11 +92,11 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         message.setTo(userToChatWith.getUserJIDProperties().getJID());
 
         try {
-            Chat chat = getChatManager().createChat(userToChatWith.getUserJIDProperties().getJID());
+            Chat chat = getChatManager().createChat(JidCreate.from(userToChatWith.getUserJIDProperties().getJID()).asJidWithLocalpartIfPossible());
             chat.sendMessage(message);
 
-            L.d(new Object() {}, "Message sent to: " + userToChatWith.getUserJIDProperties().getJID() + ", message: " +
-                    message.getBody());
+            L.d(new Object() {}, "Message sent to: " + userToChatWith.getUserJIDProperties().getJID()
+                    + ", message: " + message.getBody());
 
             MyMessage myMessage = new MyMessage(
                     UserManager.instance().getCurrentUser(),
@@ -105,7 +107,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
             saveMessageHistory(userToChatWith, myMessage);
 
             return myMessage;
-        } catch (SmackException.NotConnectedException e) {
+        } catch (SmackException.NotConnectedException | XmppStringprepException | InterruptedException e) {
             L.ex(e);
         }
         return null;
@@ -222,15 +224,15 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
     private User getParticipantUser(Chat chat, Message message) {
         if (message != null && !DataUtils.isEmpty(message.getFrom())) {
-            return new User(new UserJIDProperties(message.getFrom()));
+            return new User(new UserJIDProperties(message.getFrom().asFullJidIfPossible().toString()));
         } else {
-            return new User(new UserJIDProperties(chat.getParticipant()));
+            return new User(new UserJIDProperties(chat.getParticipant().asFullJidIfPossible().toString()));
         }
     }
 
     private User getReceiverUser(Message message) {
         if (!DataUtils.isEmpty(message.getTo())) {
-            return new User(new UserJIDProperties(message.getTo()));
+            return new User(new UserJIDProperties(message.getTo().asFullJidIfPossible().toString()));
         } else {
             return UserManager.instance().getCurrentUser();
         }

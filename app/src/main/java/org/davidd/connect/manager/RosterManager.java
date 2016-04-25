@@ -16,6 +16,9 @@ import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
+import org.jxmpp.jid.Jid;
+import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,21 +85,21 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
     }
 
     @Override
-    public void entriesAdded(Collection<String> addresses) {
+    public void entriesAdded(Collection<Jid> addresses) {
         L.d(new Object() {}, addresses.toString());
 
         contactsWereUpdated();
     }
 
     @Override
-    public void entriesUpdated(Collection<String> addresses) {
+    public void entriesUpdated(Collection<Jid> addresses) {
         L.d(new Object() {}, addresses.toString());
 
         contactsWereUpdated();
     }
 
     @Override
-    public void entriesDeleted(Collection<String> addresses) {
+    public void entriesDeleted(Collection<Jid> addresses) {
         L.d(new Object() {}, addresses.toString());
 
         contactsWereUpdated();
@@ -106,7 +109,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
     public void presenceChanged(Presence presence) {
         L.d(new Object() {}, presence.toString());
 
-        final User user = new User(new UserJIDProperties(presence.getFrom()));
+        final User user = new User(new UserJIDProperties(presence.getFrom().asFullJidIfPossible().toString()));
         user.setUserPresence(getUserPresenceForUser(user.getUserJIDProperties()));
         EventBus.getDefault().post(new UserPresenceChangedMessage(user));
 
@@ -166,17 +169,27 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
     public RosterEntry getRosterEntryForUser(UserJIDProperties userJIDProperties) {
         L.d(new Object() {});
 
-        return roster.getEntry(userJIDProperties.getJID());
+        try {
+            return roster.getEntry(JidCreate.from(userJIDProperties.getJID()));
+        } catch (XmppStringprepException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public UserPresence getUserPresenceForUser(UserJIDProperties userJIDProperties) {
         L.d(new Object() {});
 
-        Presence presence = roster.getPresence(userJIDProperties.getJID());
-        if (presence == null) {
+        try {
+            Presence presence = roster.getPresence(JidCreate.from(userJIDProperties.getJID()));
+            if (presence == null) {
+                return null;
+            } else {
+                return new UserPresence(presence);
+            }
+        } catch (XmppStringprepException e) {
+            e.printStackTrace();
             return null;
-        } else {
-            return new UserPresence(presence);
         }
     }
 
@@ -194,7 +207,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         for (RosterEntry entry : entries) {
             if (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) {
                 UserPresence userPresence = new UserPresence(roster.getPresence(entry.getUser()));
-                User user = new User(new UserJIDProperties(entry.getUser()), entry, userPresence);
+                User user = new User(new UserJIDProperties(entry.getUser().asFullJidIfPossible().toString()), entry, userPresence);
                 userContacts.add(user);
             }
         }

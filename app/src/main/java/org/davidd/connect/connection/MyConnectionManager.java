@@ -24,6 +24,7 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
+import org.jxmpp.jid.impl.JidCreate;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -79,11 +80,10 @@ public class MyConnectionManager implements ConnectionListener {
 
     @Nullable
     public String getServiceName() {
-        if (xmppTcpConnection == null
-                || xmppTcpConnection.getConfiguration() == null) {
+        if (xmppTcpConnection == null) {
             return null;
         }
-        return xmppTcpConnection.getConfiguration().getServiceName();
+        return xmppTcpConnection.getServiceName().getDomain().toString();
     }
 
     public void connect(@NonNull final UserJIDProperties JIDProperties, @NonNull final String password, @Nullable final MyConnectionListener connectionListener) {
@@ -115,32 +115,31 @@ public class MyConnectionManager implements ConnectionListener {
      * Call this only from {@link MyConnectionManager#connect(UserJIDProperties, String, MyConnectionListener)}
      * after checking the parameters.
      */
-    private void createConnection(UserJIDProperties JIDProperties, String password, MyConnectionListener connectionListener) {
+    private void createConnection(final UserJIDProperties JIDProperties, final String password, final MyConnectionListener connectionListener) {
         L.d(new Object() {}, "JID: " + JIDProperties.getJID() + ", password: " + password);
-
-        // Create the connection object
-        XMPPTCPConnectionConfiguration.Builder builder = initializeConnection();
-
-        builder.setUsernameAndPassword(JIDProperties.getName(), password);
-        builder.setServiceName(JIDProperties.getDomain());
-        builder.setHost(JIDProperties.getDomain());
-        builder.setSendPresence(false);
-
-        xmppTcpConnection = new XMPPTCPConnection(builder.build());
-        xmppTcpConnection.addConnectionListener(this);
-
-        ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(xmppTcpConnection);
-        reconnectionManager.enableAutomaticReconnection();
-        reconnectionManager.setFixedDelay(RECONNECTION_DELAY);
-
-        addConnectionListener(connectionListener);
 
         new AsyncTask<Void, Void, Throwable>() {
             @Override
             protected Throwable doInBackground(Void... params) {
                 try {
+                    // Create the connection object
+                    XMPPTCPConnectionConfiguration.Builder builder = initializeConnection();
+
+                    builder.setUsernameAndPassword(JIDProperties.getName(), password);
+                    builder.setServiceName(JidCreate.from(JIDProperties.getDomain()).asDomainBareJid());
+                    builder.setHost(JIDProperties.getDomain());
+                    builder.setSendPresence(false);
+
+                    xmppTcpConnection = new XMPPTCPConnection(builder.build());
+                    xmppTcpConnection.addConnectionListener(MyConnectionManager.this);
+
+                    ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(xmppTcpConnection);
+                    reconnectionManager.enableAutomaticReconnection();
+
+                    addConnectionListener(connectionListener);
+
                     xmppTcpConnection.connect();
-                } catch (SmackException | XMPPException | IOException e) {
+                } catch (SmackException | XMPPException | IOException | InterruptedException e) {
                     e.printStackTrace();
                     return e;
                 }
@@ -225,7 +224,7 @@ public class MyConnectionManager implements ConnectionListener {
             protected Throwable doInBackground(Void... params) {
                 try {
                     xmppTcpConnection.login();
-                } catch (XMPPException | SmackException | IOException e) {
+                } catch (XMPPException | SmackException | IOException | InterruptedException e) {
                     e.printStackTrace();
                     return e;
                 }
