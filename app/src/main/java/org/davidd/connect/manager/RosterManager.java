@@ -109,7 +109,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
     public void presenceChanged(Presence presence) {
         L.d(new Object() {}, presence.toString());
 
-        final User user = new User(new UserJIDProperties(presence.getFrom().asFullJidIfPossible().toString()));
+        final User user = new User(new UserJIDProperties(presence.getFrom().toString()));
         user.setUserPresence(getUserPresenceForUser(user.getUserJIDProperties()));
         EventBus.getDefault().post(new UserPresenceChangedMessage(user));
 
@@ -207,7 +207,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         for (RosterEntry entry : entries) {
             if (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) {
                 UserPresence userPresence = new UserPresence(roster.getPresence(entry.getUser()));
-                User user = new User(new UserJIDProperties(entry.getUser().asFullJidIfPossible().toString()), entry, userPresence);
+                User user = new User(new UserJIDProperties(entry.getUser().toString()), entry, userPresence);
                 userContacts.add(user);
             }
         }

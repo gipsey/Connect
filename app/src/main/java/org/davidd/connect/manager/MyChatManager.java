@@ -224,15 +224,15 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
     private User getParticipantUser(Chat chat, Message message) {
         if (message != null && !DataUtils.isEmpty(message.getFrom())) {
-            return new User(new UserJIDProperties(message.getFrom().asFullJidIfPossible().toString()));
+            return new User(new UserJIDProperties(message.getFrom().toString()));
         } else {
-            return new User(new UserJIDProperties(chat.getParticipant().asFullJidIfPossible().toString()));
+            return new User(new UserJIDProperties(chat.getParticipant().toString()));
         }
     }
 
     private User getReceiverUser(Message message) {
         if (!DataUtils.isEmpty(message.getTo())) {
-            return new User(new UserJIDProperties(message.getTo().asFullJidIfPossible().toString()));
+            return new User(new UserJIDProperties(message.getTo().toString()));
         } else {
             return UserManager.instance().getCurrentUser();
         }

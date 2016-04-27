@@ -44,8 +44,8 @@ public class UserPresence {
     public String toString() {
         String s = "---\n";
 
-        s += formatLine("To", presence.getTo().asFullJidIfPossible().toString());
-        s += formatLine("From", presence.getFrom().asFullJidIfPossible().toString());
+        s += formatLine("To", presence.getTo().toString());
+        s += formatLine("From", presence.getFrom().toString());
         s += formatLine("userPresenceType", getTypeFromPresence().toString());
         s += formatLine("Type", presence.getType().toString());
         s += formatLine("Mode", presence.getMode().toString());
