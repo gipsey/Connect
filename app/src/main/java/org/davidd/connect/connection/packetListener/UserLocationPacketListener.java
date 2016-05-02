@@ -1,14 +1,12 @@
 package org.davidd.connect.connection.packetListener;
 
-import org.davidd.connect.debug.L;
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.packet.ExtensionElement;
 import org.jivesoftware.smack.packet.Stanza;
 
 import java.util.List;
 
-public class UserLocationPacketListener implements StanzaListener {
+public class UserLocationPacketListener extends PrinterStanzaListener {
 
     private static UserLocationPacketListener userLocationPacketListener;
 
@@ -29,7 +27,5 @@ public class UserLocationPacketListener implements StanzaListener {
         for (ExtensionElement e : extensionElementList) {
             allExtensions += e.getNamespace() + "\n";
         }
-
-        L.d(new Object() {}, packet.getStanzaId() + ", from " + packet.getFrom() + ", allExtensions " + allExtensions);
     }
 }

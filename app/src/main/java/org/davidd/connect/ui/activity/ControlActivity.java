@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.davidd.connect.R;
+import org.davidd.connect.debug.UserLocationDebugger;
 import org.davidd.connect.model.User;
 import org.davidd.connect.ui.fragment.ControlFragment;
 import org.davidd.connect.util.ActivityUtils;
@@ -32,6 +33,14 @@ public class ControlActivity extends NavigationActivity implements NavigateToCha
                     .commit();
         } else {
             controlFragment = (ControlFragment) getSupportFragmentManager().findFragmentByTag(ControlFragment.TAG);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (true) {
+            UserLocationDebugger.startPublishingLocations();
         }
     }
 

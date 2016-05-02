@@ -170,7 +170,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         L.d(new Object() {});
 
         try {
-            return roster.getEntry(JidCreate.from(userJIDProperties.getJID()));
+            return roster.getEntry(JidCreate.bareFrom(userJIDProperties.getJID()));
         } catch (XmppStringprepException e) {
             e.printStackTrace();
             return null;
@@ -181,12 +181,8 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         L.d(new Object() {});
 
         try {
-            Presence presence = roster.getPresence(JidCreate.from(userJIDProperties.getJID()));
-            if (presence == null) {
-                return null;
-            } else {
-                return new UserPresence(presence);
-            }
+            Presence presence = roster.getPresence(JidCreate.bareFrom(userJIDProperties.getJID()));
+            return new UserPresence(presence);
         } catch (XmppStringprepException e) {
             e.printStackTrace();
             return null;
@@ -206,8 +202,8 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
 
         for (RosterEntry entry : entries) {
             if (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) {
-                UserPresence userPresence = new UserPresence(roster.getPresence(entry.getUser()));
-                User user = new User(new UserJIDProperties(entry.getUser().toString()), entry, userPresence);
+                UserPresence userPresence = new UserPresence(roster.getPresence(entry.getJid()));
+                User user = new User(new UserJIDProperties(entry.getJid().toString()), entry, userPresence);
                 userContacts.add(user);
             }
         }

@@ -7,8 +7,12 @@ import android.util.Log;
  */
 public class L {
 
+    public static void d(String message) {
+        Log.d("-", message);
+    }
+
     public static void d(Object object) {
-        d(object, "");
+        d(object, "-");
     }
 
     public static void d(Object object, String message) {

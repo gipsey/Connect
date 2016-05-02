@@ -92,7 +92,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         message.setTo(userToChatWith.getUserJIDProperties().getJID());
 
         try {
-            Chat chat = getChatManager().createChat(JidCreate.from(userToChatWith.getUserJIDProperties().getJID()).asJidWithLocalpartIfPossible());
+            Chat chat = getChatManager().createChat(JidCreate.from(userToChatWith.getUserJIDProperties().getJID()).asEntityJidIfPossible());
             chat.sendMessage(message);
 
             L.d(new Object() {}, "Message sent to: " + userToChatWith.getUserJIDProperties().getJID()

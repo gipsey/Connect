@@ -58,5 +58,4 @@ public class UserJIDPropertiesUnitTest {
         assertTrue(properties.getResource().isEmpty());
         assertFalse(properties.isNameAndDomainValid());
     }
-
 }

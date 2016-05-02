@@ -6,8 +6,8 @@ import android.support.annotation.Nullable;
 
 import org.davidd.connect.ConnectApp;
 import org.davidd.connect.connection.packetListener.AcceptAllStanzaFilter;
-import org.davidd.connect.connection.packetListener.AllPacketListener;
-import org.davidd.connect.connection.packetListener.UserLocationPacketListener;
+import org.davidd.connect.connection.packetListener.AllIncomingPacketListener;
+import org.davidd.connect.connection.packetListener.AllOutgoingPacketListener;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.model.UserJIDProperties;
@@ -24,6 +24,9 @@ import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
+import org.jivesoftware.smackx.caps.EntityCapsManager;
+import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
+import org.jivesoftware.smackx.pubsub.PubSubManager;
 import org.jxmpp.jid.impl.JidCreate;
 
 import java.io.IOException;
@@ -44,9 +47,10 @@ public class MyConnectionManager implements ConnectionListener {
     private List<MyDisconnectionListener> myDisconnectionListeners = new ArrayList<>();
     private XMPPTCPConnection xmppTcpConnection;
 
-    private boolean ENABLE_DEBUG_MODE = false;
+    private boolean ENABLE_DEBUG_MODE = true;
 
     private ChatManager chatManager;
+    private PubSubManager pubSubManager;
 
     private MyConnectionManager() {
     }
@@ -56,6 +60,35 @@ public class MyConnectionManager implements ConnectionListener {
             connectionManager = new MyConnectionManager();
         }
         return connectionManager;
+    }
+
+    /**
+     * Ensure that your connection is connected and user is logged in.
+     */
+    public static void triggerServerServiceDiscoveryInformation(XMPPTCPConnection xmppTcpConnection) {
+        ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(xmppTcpConnection);
+        try {
+            sdm.discoverInfo(null);
+        } catch (SmackException.NoResponseException | XMPPException.XMPPErrorException | InterruptedException | SmackException.NotConnectedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Ensure that your connection is connected and user is logged in.
+     */
+    public static boolean printAndReturnIfCreateNodesAndPublishItemsAreWorking(XMPPTCPConnection xmppTcpConnection) {
+        boolean canCreate = false;
+
+        try {
+            canCreate = MyConnectionManager.instance().getPubSubManager().canCreateNodesAndPublishItems();
+        } catch (SmackException.NoResponseException | SmackException.NotConnectedException | XMPPException.XMPPErrorException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        L.d("Server '" + xmppTcpConnection.getServiceName() + "' can create nodes = " + canCreate);
+
+        return canCreate;
     }
 
     public void addConnectionListener(MyConnectionListener listener) {
@@ -137,6 +170,13 @@ public class MyConnectionManager implements ConnectionListener {
                     reconnectionManager.enableAutomaticReconnection();
 
                     addConnectionListener(connectionListener);
+
+                    ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(xmppTcpConnection);
+                    sdm.addFeature("http://jabber.org/protocol/geoloc");
+                    sdm.addFeature("http://jabber.org/protocol/geoloc+notify");
+
+                    EntityCapsManager capsManager = EntityCapsManager.getInstanceFor(xmppTcpConnection);
+                    capsManager.enableEntityCaps();
 
                     xmppTcpConnection.connect();
                 } catch (SmackException | XMPPException | IOException | InterruptedException e) {
@@ -312,6 +352,8 @@ public class MyConnectionManager implements ConnectionListener {
     private void onAuthenticationSuccess() {
         L.d(new Object() {});
 
+        initializeManagersOnAuthSuccess();
+
         ConnectApp.getMainHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -336,11 +378,20 @@ public class MyConnectionManager implements ConnectionListener {
     }
 
     private void initializeManagersOnConnectionSuccess() {
+        xmppTcpConnection.addAsyncStanzaListener(AllIncomingPacketListener.instance(), new AcceptAllStanzaFilter());
+
+        xmppTcpConnection.addPacketInterceptor(AllOutgoingPacketListener.instance(), new AcceptAllStanzaFilter());
+//        xmppTcpConnection.addAsyncStanzaListener(UserLocationPacketListener.instance(), ); // TODO
+
         chatManager = ChatManager.getInstanceFor(xmppTcpConnection);
         chatManager.addChatListener(MyChatManager.instance());
+    }
 
-        xmppTcpConnection.addAsyncStanzaListener(AllPacketListener.instance(), new AcceptAllStanzaFilter());
-        xmppTcpConnection.addAsyncStanzaListener(UserLocationPacketListener.instance(), new AcceptAllStanzaFilter()); // TODO
+    private void initializeManagersOnAuthSuccess() {
+        pubSubManager = PubSubManager.getInstance(xmppTcpConnection, xmppTcpConnection.getUser().asBareJid());
+
+        triggerServerServiceDiscoveryInformation(xmppTcpConnection);
+        printAndReturnIfCreateNodesAndPublishItemsAreWorking(xmppTcpConnection);
     }
 
     private void tearDownManagersOnConnectionError() {
@@ -349,8 +400,10 @@ public class MyConnectionManager implements ConnectionListener {
         //        chatManager = null;
         //     }
 
-        xmppTcpConnection.removeAsyncStanzaListener(AllPacketListener.instance());
-        xmppTcpConnection.removeAsyncStanzaListener(UserLocationPacketListener.instance());
+        xmppTcpConnection.removePacketInterceptor(AllIncomingPacketListener.instance());
+
+        xmppTcpConnection.removeAsyncStanzaListener(AllOutgoingPacketListener.instance());
+//        xmppTcpConnection.removeAsyncStanzaListener(UserLocationPacketListener.instance()); // TODO
     }
 
     /**
@@ -362,5 +415,9 @@ public class MyConnectionManager implements ConnectionListener {
 
     public ChatManager getChatManager() {
         return chatManager;
+    }
+
+    public PubSubManager getPubSubManager() {
+        return pubSubManager;
     }
 }
