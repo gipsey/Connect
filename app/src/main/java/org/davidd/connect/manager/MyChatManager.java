@@ -134,7 +134,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
      */
     @Override
     public void processMessage(Chat chat, Message message) {
-        L.d(new Object() {}, "Message from: " + chat.getParticipant());
+        L.d(new Object() {}, "Message from = " + chat.getParticipant());
 
         User participant = getParticipantUser(chat, message);
 

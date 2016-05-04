@@ -20,12 +20,11 @@
 
         <menu>
             <item
-                android:id="@+id/drawer_settings"
-                android:title="@string/drawer_settings"/>
-
-            <item
                 android:id="@+id/drawer_about"
                 android:title="@string/drawer_about"/>
+            <item
+                android:id="@+id/drawer_debug"
+                android:title="@string/drawer_debug"/>
         </menu>
     </item>
 

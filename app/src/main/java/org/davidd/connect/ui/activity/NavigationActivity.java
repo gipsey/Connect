@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import org.davidd.connect.R;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.manager.GeolocationManager;
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
@@ -81,8 +82,8 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
             case R.id.drawer_contacts:
                 navigateToControlActivity(1);
                 break;
-            case R.id.drawer_settings:
-                L.d(new Object() {}, "drawer_settings");
+            case R.id.drawer_debug:
+                GeolocationManager.getInstance().debugPressed(this);
                 break;
             case R.id.drawer_about:
                 L.d(new Object() {}, "drawer_about");

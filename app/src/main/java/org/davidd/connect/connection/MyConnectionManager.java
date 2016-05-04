@@ -12,6 +12,8 @@ import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.util.DataUtils;
+import org.davidd.connect.xmpp.AllPepEventListener;
+import org.davidd.connect.xmpp.GeolocationExtensionProvider;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.ConnectionListener;
 import org.jivesoftware.smack.ReconnectionManager;
@@ -21,11 +23,13 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
 import org.jivesoftware.smackx.caps.EntityCapsManager;
 import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
+import org.jivesoftware.smackx.pep.PEPManager;
 import org.jivesoftware.smackx.pubsub.PubSubManager;
 import org.jxmpp.jid.impl.JidCreate;
 
@@ -51,6 +55,7 @@ public class MyConnectionManager implements ConnectionListener {
 
     private ChatManager chatManager;
     private PubSubManager pubSubManager;
+    private PEPManager pepManager;
 
     private MyConnectionManager() {
     }
@@ -178,6 +183,11 @@ public class MyConnectionManager implements ConnectionListener {
                     EntityCapsManager capsManager = EntityCapsManager.getInstanceFor(xmppTcpConnection);
                     capsManager.enableEntityCaps();
 
+                    ProviderManager.addExtensionProvider("event", "http://jabber.org/protocol/pubsub#event", new GeolocationExtensionProvider());
+
+                    pepManager = PEPManager.getInstanceFor(xmppTcpConnection);
+                    pepManager.addPEPListener(AllPepEventListener.getInstance());
+
                     xmppTcpConnection.connect();
                 } catch (SmackException | XMPPException | IOException | InterruptedException e) {
                     e.printStackTrace();
@@ -231,7 +241,7 @@ public class MyConnectionManager implements ConnectionListener {
 
     private void disconnectAsync(final MyDisconnectionListener disconnectionListener) {
         xmppTcpConnection.removeConnectionListener(this);
-        tearDownManagersOnConnectionError();
+        tearDownManagersOnDisconnect();
 
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -251,7 +261,7 @@ public class MyConnectionManager implements ConnectionListener {
     }
 
     public void disconnectSync() {
-        tearDownManagersOnConnectionError();
+        tearDownManagersOnDisconnect();
         xmppTcpConnection.disconnect();
     }
 
@@ -378,32 +388,42 @@ public class MyConnectionManager implements ConnectionListener {
     }
 
     private void initializeManagersOnConnectionSuccess() {
-        xmppTcpConnection.addAsyncStanzaListener(AllIncomingPacketListener.instance(), new AcceptAllStanzaFilter());
+        // add packet listeners
+        if (ENABLE_DEBUG_MODE) {
+            xmppTcpConnection.addAsyncStanzaListener(AllIncomingPacketListener.instance(), new AcceptAllStanzaFilter());
+            xmppTcpConnection.addPacketInterceptor(AllOutgoingPacketListener.instance(), new AcceptAllStanzaFilter());
+        }
 
-        xmppTcpConnection.addPacketInterceptor(AllOutgoingPacketListener.instance(), new AcceptAllStanzaFilter());
-//        xmppTcpConnection.addAsyncStanzaListener(UserLocationPacketListener.instance(), ); // TODO
-
+        // set up chat manager
         chatManager = ChatManager.getInstanceFor(xmppTcpConnection);
         chatManager.addChatListener(MyChatManager.instance());
     }
 
-    private void initializeManagersOnAuthSuccess() {
-        pubSubManager = PubSubManager.getInstance(xmppTcpConnection, xmppTcpConnection.getUser().asBareJid());
+    private void tearDownManagersOnDisconnect() {
+        // remove packet listeners
+        if (ENABLE_DEBUG_MODE) {
+            xmppTcpConnection.removePacketInterceptor(AllIncomingPacketListener.instance());
+            xmppTcpConnection.removeAsyncStanzaListener(AllOutgoingPacketListener.instance());
+        }
 
-        triggerServerServiceDiscoveryInformation(xmppTcpConnection);
-        printAndReturnIfCreateNodesAndPublishItemsAreWorking(xmppTcpConnection);
-    }
+        pubSubManager = null;
+        pepManager = null;
 
-    private void tearDownManagersOnConnectionError() {
+        // tear down chat manager
         //     if (chatManager != null) {
         //        chatManager.removeChatListener(MyChatManager.instance());
         //        chatManager = null;
         //     }
+    }
 
-        xmppTcpConnection.removePacketInterceptor(AllIncomingPacketListener.instance());
+    private void initializeManagersOnAuthSuccess() {
+        pubSubManager = PubSubManager.getInstance(xmppTcpConnection, xmppTcpConnection.getUser().asBareJid());
+//        pubSubManager = PubSubManager.getInstance(xmppTcpConnection, check with domain not with the id of the user); // TODO
 
-        xmppTcpConnection.removeAsyncStanzaListener(AllOutgoingPacketListener.instance());
-//        xmppTcpConnection.removeAsyncStanzaListener(UserLocationPacketListener.instance()); // TODO
+        if (ENABLE_DEBUG_MODE) {
+            triggerServerServiceDiscoveryInformation(xmppTcpConnection);
+            printAndReturnIfCreateNodesAndPublishItemsAreWorking(xmppTcpConnection);
+        }
     }
 
     /**
@@ -419,5 +439,9 @@ public class MyConnectionManager implements ConnectionListener {
 
     public PubSubManager getPubSubManager() {
         return pubSubManager;
+    }
+
+    public PEPManager getPepManager() {
+        return pepManager;
     }
 }
