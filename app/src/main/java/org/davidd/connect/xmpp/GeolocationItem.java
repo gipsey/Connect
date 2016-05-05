@@ -26,6 +26,7 @@ public class GeolocationItem extends Item {
         this.locality = locality;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.datum = datum;
     }
 
     @Override

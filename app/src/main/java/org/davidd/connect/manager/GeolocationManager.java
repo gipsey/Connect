@@ -1,12 +1,14 @@
 package org.davidd.connect.manager;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import org.davidd.connect.ConnectApp;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.GeolocationDebugger;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.model.User;
 import org.davidd.connect.xmpp.GeolocationEventElement;
 import org.davidd.connect.xmpp.GeolocationItem;
 import org.jivesoftware.smack.SmackException;
@@ -20,6 +22,11 @@ import org.jivesoftware.smackx.pubsub.PubSubManager;
 import org.jivesoftware.smackx.pubsub.PublishModel;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Handles sending and receiving geolocation packets.
  */
@@ -28,11 +35,13 @@ public class GeolocationManager {
     private static GeolocationManager geolocationManager;
 
     private Context contextForDebugOnly;
+    private Map<User, List<GeolocationItem>> savedLocations;
 
     private GeolocationManager() {
+        savedLocations = new HashMap<>();
     }
 
-    public static GeolocationManager getInstance() {
+    public static GeolocationManager instance() {
         if (geolocationManager == null) {
             geolocationManager = new GeolocationManager();
         }
@@ -44,9 +53,28 @@ public class GeolocationManager {
         GeolocationDebugger.startPublishingLocations();
     }
 
+    @Nullable
+    public List<GeolocationItem> getGeolocationItemsForUser(User user) {
+        return savedLocations.get(user);
+    }
+
     public void geolocationEventReceived(GeolocationEventElement event) {
         GeolocationItem item = event.getEvent();
+        User publisher = event.getEventPublisher();
+
         L.d(new Object() {}, "GEOLOC ITEM = " + item.toXML());
+
+        if (publisher == null) {
+            throw new IllegalStateException("Event publisher is null.");
+        }
+
+        if (savedLocations.containsKey(publisher)) {
+            savedLocations.get(publisher).add(item);
+        } else {
+            List<GeolocationItem> items = new ArrayList<>();
+            items.add(item);
+            savedLocations.put(publisher, items);
+        }
     }
 
     /**

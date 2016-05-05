@@ -86,7 +86,7 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
                 L.d(new Object() {}, "drawer_about");
                 break;
             case R.id.drawer_debug_geoloc:
-                GeolocationManager.getInstance().debugPressed(this);
+                GeolocationManager.instance().debugPressed(this);
                 break;
             case R.id.drawer_debug_map:
                 navigateToMapsActivity();

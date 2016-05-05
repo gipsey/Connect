@@ -9,4 +9,11 @@
         app:showAsAction="always">
     </item>
 
+    <item
+        android:id="@+id/user_location"
+        android:icon="@drawable/ic_my_location_white_48dp"
+        android:title="Location"
+        app:showAsAction="always">
+    </item>
+
 </menu>

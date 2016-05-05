@@ -2,6 +2,8 @@ package org.davidd.connect.xmpp;
 
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.GeolocationManager;
+import org.davidd.connect.model.User;
+import org.davidd.connect.model.UserJIDProperties;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.pep.PEPListener;
 import org.jivesoftware.smackx.pubsub.EventElement;
@@ -33,7 +35,12 @@ public class AllPepEventListener implements PEPListener {
 
 
         if (event instanceof GeolocationEventElement) {
-            GeolocationManager.getInstance().geolocationEventReceived((GeolocationEventElement) event);
+            GeolocationEventElement geolocationEventElement = (GeolocationEventElement) event;
+
+            UserJIDProperties jid = new UserJIDProperties(from.toString());
+            geolocationEventElement.setEventPublisher(new User(jid));
+
+            GeolocationManager.instance().geolocationEventReceived(geolocationEventElement);
         }
     }
 }

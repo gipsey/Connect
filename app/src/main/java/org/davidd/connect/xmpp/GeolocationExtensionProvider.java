@@ -60,6 +60,6 @@ public class GeolocationExtensionProvider extends ExtensionElementProvider {
 
         L.d(new Object() {}, "GEOLOC EXTENSION PARSED = " + item.toXML());
 
-        return new GeolocationEventElement(item);
+        return new GeolocationEventElement(null, item);
     }
 }

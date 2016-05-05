@@ -29,6 +29,7 @@ import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresenceType;
 import org.davidd.connect.ui.activity.ChatActivity;
+import org.davidd.connect.ui.activity.MapsActivity;
 import org.davidd.connect.ui.activity.UserActivity;
 import org.davidd.connect.ui.adapter.ChatAdapter;
 import org.davidd.connect.ui.adapter.ContactsHelper;
@@ -114,11 +115,15 @@ public class ChatFragment extends Fragment implements
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
+                Bundle bundle = new Bundle();
                 switch (item.getItemId()) {
                     case R.id.user_profile:
-                        Bundle bundle = new Bundle();
                         bundle.putString(UserActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(userToChatWith));
                         ActivityUtils.navigate(getActivity(), UserActivity.class, bundle, false);
+                        return true;
+                    case R.id.user_location:
+                        bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(userToChatWith));
+                        ActivityUtils.navigate(getActivity(), MapsActivity.class, bundle, false);
                         return true;
                     default:
                         return false;
