@@ -23,8 +23,11 @@
                 android:id="@+id/drawer_about"
                 android:title="@string/drawer_about"/>
             <item
-                android:id="@+id/drawer_debug"
-                android:title="@string/drawer_debug"/>
+                android:id="@+id/drawer_debug_geoloc"
+                android:title="@string/drawer_debug_geoloc"/>
+            <item
+                android:id="@+id/drawer_debug_map"
+                android:title="@string/drawer_debug_map"/>
         </menu>
     </item>
 

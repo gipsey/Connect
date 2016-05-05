@@ -82,11 +82,14 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
             case R.id.drawer_contacts:
                 navigateToControlActivity(1);
                 break;
-            case R.id.drawer_debug:
-                GeolocationManager.getInstance().debugPressed(this);
-                break;
             case R.id.drawer_about:
                 L.d(new Object() {}, "drawer_about");
+                break;
+            case R.id.drawer_debug_geoloc:
+                GeolocationManager.getInstance().debugPressed(this);
+                break;
+            case R.id.drawer_debug_map:
+                navigateToMapsActivity();
                 break;
         }
 
@@ -110,5 +113,9 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
             bundle.putInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, fragmentIndexToShow);
             ActivityUtils.navigate(this, ControlActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
         }
+    }
+
+    private void navigateToMapsActivity() {
+        ActivityUtils.navigate(this, MapsActivity.class, null, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
     }
 }
