@@ -1,10 +1,7 @@
 package org.davidd.connect.manager;
 
 import org.davidd.connect.ConnectApp;
-import org.davidd.connect.connection.ErrorMessage;
-import org.davidd.connect.connection.MyConnectionListener;
 import org.davidd.connect.connection.MyConnectionManager;
-import org.davidd.connect.connection.MyDisconnectionListener;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
@@ -12,7 +9,6 @@ import org.davidd.connect.model.UserPresence;
 import org.davidd.connect.model.UserPresenceType;
 import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
@@ -31,17 +27,14 @@ import java.util.Set;
  * @author David Debre
  *         on 2015/12/20
  */
-public class RosterManager implements RosterListener, MyConnectionListener, MyDisconnectionListener {
+public class RosterManager implements RosterListener {
 
     private static RosterManager rosterManager;
 
     private List<User> userContacts = new ArrayList<>();
     private Set<UserContactsUpdatedListener> userContactsUpdatedListeners = new HashSet<>();
-    private Roster roster;
 
     private RosterManager() {
-        MyConnectionManager.instance().addConnectionListener(this);
-        MyConnectionManager.instance().addDisconnectionListener(this);
     }
 
     public static RosterManager instance() {
@@ -49,39 +42,6 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
             rosterManager = new RosterManager();
         }
         return rosterManager;
-    }
-
-    @Override
-    public void onConnectionSuccess() {
-        L.d(new Object() {});
-
-        if (roster == null) {
-            roster = Roster.getInstanceFor(MyConnectionManager.instance().getXmppTcpConnection());
-            roster.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
-            roster.addRosterListener(this);
-        }
-    }
-
-    @Override
-    public void onConnectionFailed(ErrorMessage message) {
-    }
-
-    @Override
-    public void onAuthenticationSuccess() {
-    }
-
-    @Override
-    public void onAuthenticationFailed(ErrorMessage message) {
-    }
-
-    @Override
-    public void onDisconnect() {
-        L.d(new Object() {});
-
-        if (roster != null) {
-            roster.removeRosterListener(this);
-            roster = null;
-        }
     }
 
     @Override
@@ -170,7 +130,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         L.d(new Object() {});
 
         try {
-            return roster.getEntry(JidCreate.bareFrom(userJIDProperties.getJID()));
+            return MyConnectionManager.instance().getRoster().getEntry(JidCreate.bareFrom(userJIDProperties.getJID()));
         } catch (XmppStringprepException e) {
             e.printStackTrace();
             return null;
@@ -181,7 +141,7 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
         L.d(new Object() {});
 
         try {
-            Presence presence = roster.getPresence(JidCreate.bareFrom(userJIDProperties.getJID()));
+            Presence presence = MyConnectionManager.instance().getRoster().getPresence(JidCreate.bareFrom(userJIDProperties.getJID()));
             return new UserPresence(presence);
         } catch (XmppStringprepException e) {
             e.printStackTrace();
@@ -198,11 +158,11 @@ public class RosterManager implements RosterListener, MyConnectionListener, MyDi
 
     private void updateUserContacts() {
         userContacts.clear();
-        Set<RosterEntry> entries = roster.getEntries();
+        Set<RosterEntry> entries = MyConnectionManager.instance().getRoster().getEntries();
 
         for (RosterEntry entry : entries) {
             if (entry.getType() == RosterPacket.ItemType.to || entry.getType() == RosterPacket.ItemType.both) {
-                UserPresence userPresence = new UserPresence(roster.getPresence(entry.getJid()));
+                UserPresence userPresence = new UserPresence(MyConnectionManager.instance().getRoster().getPresence(entry.getJid()));
                 User user = new User(new UserJIDProperties(entry.getJid().toString()), entry, userPresence);
                 userContacts.add(user);
             }

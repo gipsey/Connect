@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest
     package="org.davidd.connect"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -11,10 +12,11 @@
     <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
     <uses-permission android:name="android.permission.READ_PROFILE"/>
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
-
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
-    <!--    The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
+    <!--
+            The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
                 Google Maps Android API v2, but you must specify either coarse or fine
                 location permissions for the 'MyLocation' functionality.
     -->
@@ -43,37 +45,58 @@
             android:value="@string/google_maps_key"/>
 
         <activity
-            android:name=".ui.activity.SplashActivity"
+            android:name=".component.activity.SplashActivity"
             android:label="@string/app_name"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
+
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-
         <activity
-            android:name=".ui.activity.ControlActivity"
+            android:name=".component.activity.ControlActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
-
         <activity
-            android:name=".ui.activity.LoginActivity"
+            android:name=".component.activity.LoginActivity"
             android:windowSoftInputMode="stateHidden"/>
-
         <activity
-            android:name=".ui.activity.ChatActivity"
-            android:parentActivityName=".ui.activity.ControlActivity"
+            android:name=".component.activity.ChatActivity"
+            android:parentActivityName=".component.activity.ControlActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize"/>
-
         <activity
-            android:name=".ui.activity.UserActivity"
+            android:name=".component.activity.UserActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
-
         <activity
-            android:name="org.davidd.connect.ui.activity.MapsActivity"
+            android:name=".component.activity.MapsActivity"
             android:label="@string/title_activity_maps">
         </activity>
 
+        <service
+            android:name=".connection.ConnectionService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
+        <receiver
+            android:name=".component.receiver.SystemBootsUpReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".component.receiver.ConnectionChangedReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+            </intent-filter>
+        </receiver>
     </application>
+
 </manifest>

@@ -108,6 +108,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
             return myMessage;
         } catch (SmackException.NotConnectedException | XmppStringprepException | InterruptedException e) {
+            // TODO show an error message when this happens
             L.ex(e);
         }
         return null;

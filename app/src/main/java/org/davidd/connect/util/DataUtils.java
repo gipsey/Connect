@@ -1,5 +1,9 @@
 package org.davidd.connect.util;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -26,15 +30,15 @@ public class DataUtils {
         return new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
     }
 
-//    public static boolean isNetworkAvailable(Context context) {
-//        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-//
-//        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-//
-//        return activeNetworkInfo != null &&
-//                (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI || activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE) &&
-//                activeNetworkInfo.isConnected();
-//    }
+    public static boolean isNetworkAvailable(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+        return activeNetworkInfo != null &&
+                (activeNetworkInfo.getType() == ConnectivityManager.TYPE_WIFI || activeNetworkInfo.getType() == ConnectivityManager.TYPE_MOBILE) &&
+                activeNetworkInfo.isConnected();
+    }
 
     public static Date getCurrentDate() {
         return new Date(System.currentTimeMillis());
