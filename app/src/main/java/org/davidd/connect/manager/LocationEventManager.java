@@ -1,12 +1,7 @@
 package org.davidd.connect.manager;
 
-import android.content.Context;
-import android.location.Address;
-import android.location.Location;
 import android.support.annotation.Nullable;
-import android.widget.Toast;
 
-import org.davidd.connect.ConnectApp;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.GeolocationDebugger;
 import org.davidd.connect.debug.L;
@@ -24,9 +19,7 @@ import org.jivesoftware.smackx.pubsub.PubSubManager;
 import org.jivesoftware.smackx.pubsub.PublishModel;
 import org.jivesoftware.smackx.xdata.packet.DataForm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,8 +29,7 @@ public class LocationEventManager {
 
     private static LocationEventManager locationEventManager;
 
-    private Context contextForDebugOnly;
-    private Map<User, List<GeolocationItem>> savedLocations;
+    private Map<User, GeolocationItem> savedLocations; // TODO make persistent
 
     private LocationEventManager() {
         savedLocations = new HashMap<>();
@@ -50,13 +42,12 @@ public class LocationEventManager {
         return locationEventManager;
     }
 
-    public void debugPressed(Context context) {
-        contextForDebugOnly = context;
+    public void debugPressed() {
         GeolocationDebugger.startPublishingLocations();
     }
 
     @Nullable
-    public List<GeolocationItem> getGeolocationItemsForUser(User user) {
+    public GeolocationItem getGeolocationItemsForUser(User user) {
         return savedLocations.get(user);
     }
 
@@ -70,18 +61,7 @@ public class LocationEventManager {
             throw new IllegalStateException("Event publisher is null.");
         }
 
-        if (savedLocations.containsKey(publisher)) {
-            savedLocations.get(publisher).add(item);
-        } else {
-            List<GeolocationItem> items = new ArrayList<>();
-            items.add(item);
-            savedLocations.put(publisher, items);
-        }
-    }
-
-    public void sendUserLocationItem(Location location) {
-        GeolocationItem item = new GeolocationItem(location.getLatitude(), location.getLongitude());
-        sendUserLocationItem(item);
+        savedLocations.put(publisher, item);
     }
 
     /**

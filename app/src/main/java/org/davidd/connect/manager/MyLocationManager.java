@@ -1,6 +1,8 @@
 package org.davidd.connect.manager;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -9,11 +11,16 @@ import android.os.HandlerThread;
 
 import org.davidd.connect.ConnectApp;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.xmpp.GeolocationItem;
+
+import java.io.IOException;
+import java.util.List;
 
 public class MyLocationManager implements LocationListener {
 
-    private static final long MIN_TIME = 1000; // in milliseconds
-    private static final float MIN_DISTANCE = 2; // metin meters
+    // TODO make it adjustable
+    private static final long MIN_TIME = 2000; // in milliseconds
+    private static final float MIN_DISTANCE = 10; // metin meters
 
     private static MyLocationManager myLocationManager;
 
@@ -73,7 +80,7 @@ public class MyLocationManager implements LocationListener {
     public void onLocationChanged(Location location) {
         L.d(new Object() {}, "Location = " + location.toString());
 
-        LocationEventManager.instance().sendUserLocationItem(location);
+        LocationEventManager.instance().sendUserLocationItem(buildGeolocationItemFromLocation(location));
     }
 
     @Override
@@ -89,5 +96,36 @@ public class MyLocationManager implements LocationListener {
     @Override
     public void onProviderDisabled(String provider) {
         L.d(new Object() {}, "Proovider " + provider + " became Disabled");
+    }
+
+    private GeolocationItem buildGeolocationItemFromLocation(Location location) {
+        GeolocationItem item = new GeolocationItem();
+
+        item.setAccuracy(location.getAccuracy());
+        item.setAlt(location.getAltitude());
+        item.setBearing(location.getBearing());
+        item.setLat(location.getLatitude());
+        item.setLon(location.getLongitude());
+        item.setSpeed(location.getSpeed());
+        item.setTimestamp(String.valueOf(location.getTime()));
+
+        Geocoder geocoder = new Geocoder(ConnectApp.instance().getApplicationContext());
+        try {
+            List<Address> addressList = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            if (!addressList.isEmpty()) {
+                Address address = addressList.get(0);
+
+                item.setArea(address.getSubAdminArea());
+                item.setCountry(address.getCountryName());
+                item.setCountrycode(address.getCountryCode());
+                item.setLocality(address.getLocality());
+                item.setPostalcode(address.getPostalCode());
+                item.setRegion(address.getAdminArea());
+                item.setStreet(address.getThoroughfare());
+            }
+        } catch (IOException | IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        return item;
     }
 }

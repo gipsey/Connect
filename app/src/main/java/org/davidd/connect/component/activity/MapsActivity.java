@@ -16,8 +16,6 @@ import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.xmpp.GeolocationItem;
 
-import java.util.List;
-
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -27,7 +25,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
 
     private User userToGetLocationsFor;
-    private List<GeolocationItem> locationsForUser;
+    private GeolocationItem locationForUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +37,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         userToGetLocationsFor = createGsonWithExcludedFields().fromJson(getIntent().getStringExtra(USER_BUNDLE_TAG), User.class);
-        locationsForUser = LocationEventManager.instance().getGeolocationItemsForUser(userToGetLocationsFor);
+        locationForUser = LocationEventManager.instance().getGeolocationItemsForUser(userToGetLocationsFor);
     }
 
     /**
@@ -55,13 +53,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if (locationsForUser != null) {
-            for (GeolocationItem item : locationsForUser) {
-                // Add a marker in Sydney and move the camera
-                LatLng sydney = new LatLng(item.getLatitude(), item.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(sydney).title("Here is " + userToGetLocationsFor.getUserJIDProperties().getName()));
-                mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-            }
+        if (locationForUser != null) {
+            LatLng sydney = new LatLng(locationForUser.getLat(), locationForUser.getLon());
+            mMap.addMarker(new MarkerOptions().position(sydney).title("Here is " + userToGetLocationsFor.getUserJIDProperties().getName()));
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
         } else {
             Toast.makeText(this, "No user to show location for", Toast.LENGTH_SHORT).show();
         }

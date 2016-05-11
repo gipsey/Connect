@@ -32,8 +32,8 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
     private static MyChatManager myChatManager;
 
     // the used key is the participant user's name and domain
-    private Map<String, MyConversation> conversations = new HashMap<>(); // TODO: make it persistent
-    private List<ActiveChat> activeChats = new ArrayList<>(); // TODO: make it persistent ???
+    private Map<String, MyConversation> conversations = new HashMap<>(); // TODO: make persistent
+    private List<ActiveChat> activeChats = new ArrayList<>(); // TODO: make persistent
     // the used key is the user's name and domain
     private Map<String, List<MessageReceivedListener>> messageListeners = new HashMap<>();
     private List<ChatUpdatedListener> chatUpdatedListeners = new ArrayList<>();

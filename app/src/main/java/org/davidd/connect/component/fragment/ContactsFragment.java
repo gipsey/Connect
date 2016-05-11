@@ -117,6 +117,14 @@ public class ContactsFragment extends ControlActivityFragment implements RosterM
 
             ContactGroup group = getGroupFroName(groupName);
             group.getUsers().add(userContacts.get(i));
+            // TODO crash
+//            java.lang.IndexOutOfBoundsException: Invalid index 1, size is 0
+//            at java.util.ArrayList.throwIndexOutOfBoundsException(ArrayList.java:255)
+//            at java.util.ArrayList.get(ArrayList.java:308)
+//            at java.util.Collections$UnmodifiableList.get(Collections.java:1050)
+//            at org.davidd.connect.component.fragment.ContactsFragment.updateContactGroups(ContactsFragment.java:119)
+//            at org.davidd.connect.component.fragment.ContactsFragment.showUserContacts(ContactsFragment.java:104)
+//            at org.davidd.connect.component.fragment.ContactsFragment.userContactsUpdated(ContactsFragment.java:99)
         }
     }
 

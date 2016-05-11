@@ -25,10 +25,6 @@ public class DisplayUtils {
         Snackbar.make(view, message, Snackbar.LENGTH_SHORT).show();
     }
 
-    public static void showSoftKeyboard() {
-        // TODO
-    }
-
     public static void hideSoftKeyboard(Context context, View view) {
         if (view != null) {
             InputMethodManager im = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
