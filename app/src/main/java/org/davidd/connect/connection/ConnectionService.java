@@ -19,7 +19,7 @@ public class ConnectionService extends Service {
     public static final String USER_TAG = "UserTag";
     public static final String PASSWORD_TAG = "PasswordTag";
 
-    ExecutorService executorService;
+    private ExecutorService executorService;
 
     @Override
     public IBinder onBind(Intent intent) {

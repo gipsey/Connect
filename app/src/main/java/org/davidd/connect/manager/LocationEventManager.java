@@ -1,6 +1,8 @@
 package org.davidd.connect.manager;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Location;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -30,22 +32,22 @@ import java.util.Map;
 /**
  * Handles sending and receiving geolocation packets.
  */
-public class GeolocationManager {
+public class LocationEventManager {
 
-    private static GeolocationManager geolocationManager;
+    private static LocationEventManager locationEventManager;
 
     private Context contextForDebugOnly;
     private Map<User, List<GeolocationItem>> savedLocations;
 
-    private GeolocationManager() {
+    private LocationEventManager() {
         savedLocations = new HashMap<>();
     }
 
-    public static GeolocationManager instance() {
-        if (geolocationManager == null) {
-            geolocationManager = new GeolocationManager();
+    public static LocationEventManager instance() {
+        if (locationEventManager == null) {
+            locationEventManager = new LocationEventManager();
         }
-        return geolocationManager;
+        return locationEventManager;
     }
 
     public void debugPressed(Context context) {
@@ -77,6 +79,11 @@ public class GeolocationManager {
         }
     }
 
+    public void sendUserLocationItem(Location location) {
+        GeolocationItem item = new GeolocationItem(location.getLatitude(), location.getLongitude());
+        sendUserLocationItem(item);
+    }
+
     /**
      * @param item the GeolocationItem to be sent
      */
@@ -93,11 +100,7 @@ public class GeolocationManager {
         } catch (SmackException.NotConnectedException | XMPPException.XMPPErrorException |
                 SmackException.NoResponseException | InterruptedException e) {
             e.printStackTrace();
-            showGeolocItemPublishingStatus(item, false);
-            return;
         }
-
-        showGeolocItemPublishingStatus(item, true);
     }
 
     public LeafNode createGeolocationNode() {
@@ -135,14 +138,5 @@ public class GeolocationManager {
         }
 
         return createGeolocationNode();
-    }
-
-    private void showGeolocItemPublishingStatus(final GeolocationItem item, final boolean succeeded) {
-        ConnectApp.getMainHandler().post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(contextForDebugOnly, "Geoloc item '" + item.getLocality() + "' sent = " + succeeded, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 }

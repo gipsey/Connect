@@ -1,6 +1,6 @@
 package org.davidd.connect.debug;
 
-import org.davidd.connect.manager.GeolocationManager;
+import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.xmpp.GeolocationItem;
 
 import java.util.ArrayList;
@@ -46,29 +46,29 @@ public class GeolocationDebugger {
             public void run() {
                 long wait = 3000;
                 try {
-                    GeolocationManager.instance().sendUserLocationItem(berlin);
+                    LocationEventManager.instance().sendUserLocationItem(berlin);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(london);
+                    LocationEventManager.instance().sendUserLocationItem(london);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(moscow);
+                    LocationEventManager.instance().sendUserLocationItem(moscow);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(tokyo);
+                    LocationEventManager.instance().sendUserLocationItem(tokyo);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(sydney);
+                    LocationEventManager.instance().sendUserLocationItem(sydney);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(newYork);
+                    LocationEventManager.instance().sendUserLocationItem(newYork);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(clujManastur);
+                    LocationEventManager.instance().sendUserLocationItem(clujManastur);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(clujBaciu);
+                    LocationEventManager.instance().sendUserLocationItem(clujBaciu);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(clujBucuresti1);
+                    LocationEventManager.instance().sendUserLocationItem(clujBucuresti1);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(clujBucuresti2);
+                    LocationEventManager.instance().sendUserLocationItem(clujBucuresti2);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(clujBucuresti3);
+                    LocationEventManager.instance().sendUserLocationItem(clujBucuresti3);
                     Thread.sleep(wait);
-                    GeolocationManager.instance().sendUserLocationItem(clujBucuresti4);
+                    LocationEventManager.instance().sendUserLocationItem(clujBucuresti4);
                     Thread.sleep(wait);
                 } catch (InterruptedException e) {
                     e.printStackTrace();

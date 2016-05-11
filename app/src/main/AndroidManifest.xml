@@ -21,7 +21,7 @@
                 location permissions for the 'MyLocation' functionality.
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:name=".ConnectApp"
@@ -54,20 +54,25 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
         <activity
             android:name=".component.activity.ControlActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+
         <activity
             android:name=".component.activity.LoginActivity"
             android:windowSoftInputMode="stateHidden"/>
+
         <activity
             android:name=".component.activity.ChatActivity"
             android:parentActivityName=".component.activity.ControlActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize"/>
+
         <activity
             android:name=".component.activity.UserActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
+
         <activity
             android:name=".component.activity.MapsActivity"
             android:label="@string/title_activity_maps">
@@ -75,6 +80,12 @@
 
         <service
             android:name=".connection.ConnectionService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
+        <service
+            android:name=".component.service.LocationService"
             android:enabled="true"
             android:exported="false">
         </service>
@@ -97,6 +108,17 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".component.receiver.ProvidersChangedReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.location.PROVIDERS_CHANGED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

@@ -12,7 +12,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.davidd.connect.R;
-import org.davidd.connect.manager.GeolocationManager;
+import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.xmpp.GeolocationItem;
 
@@ -39,7 +39,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         userToGetLocationsFor = createGsonWithExcludedFields().fromJson(getIntent().getStringExtra(USER_BUNDLE_TAG), User.class);
-        locationsForUser = GeolocationManager.instance().getGeolocationItemsForUser(userToGetLocationsFor);
+        locationsForUser = LocationEventManager.instance().getGeolocationItemsForUser(userToGetLocationsFor);
     }
 
     /**

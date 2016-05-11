@@ -21,6 +21,12 @@ public class GeolocationItem extends Item {
         super(itemId, nodeId);
     }
 
+    public GeolocationItem(double latitude, double longitude) {
+        super();
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public GeolocationItem(String locality, double latitude, double longitude, String datum) {
         super();
         this.locality = locality;
