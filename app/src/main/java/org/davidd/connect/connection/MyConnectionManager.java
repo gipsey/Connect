@@ -1,9 +1,11 @@
 package org.davidd.connect.connection;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import org.davidd.connect.component.service.LocationService;
 import org.davidd.connect.connection.event.OnAuthFailedEvent;
 import org.davidd.connect.connection.event.OnAuthSucceededEvent;
 import org.davidd.connect.connection.event.OnConnectionFailedEvent;

@@ -58,6 +58,11 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
 
         drawerLayout.setDrawerListener(toggle);
         toggle.syncState();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.drawer_navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -75,12 +80,6 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
 
         TextView userNameTextView = (TextView) drawerHeaderMainLayout.findViewById(R.id.user_name_textView);
         userNameTextView.setText(UserManager.instance().getCurrentUser().getUserJIDProperties().getJID());
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
 
         checkIfLocationSettingsAreSet();
     }

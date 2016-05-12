@@ -1,6 +1,8 @@
 package org.davidd.connect.component.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,21 +11,30 @@ import android.widget.ArrayAdapter;
 
 import com.ocpsoft.pretty.time.PrettyTime;
 
+import org.davidd.connect.component.activity.MapsActivity;
+import org.davidd.connect.component.activity.UserActivity;
+import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.ActiveChat;
+import org.davidd.connect.model.User;
+import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
 
 import java.util.List;
 
+import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
+
 public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
 
     private final List<ActiveChat> activeChats;
+    private Activity activity;
     private LayoutInflater inflater;
     private int resource;
 
     public ActiveChatsAdapter(Context context, int resource, List<ActiveChat> activeChats) {
         super(context, resource, activeChats);
 
+        activity = (Activity) context;
         this.resource = resource;
         this.activeChats = activeChats;
 
@@ -43,6 +54,28 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
         }
 
         setupContact(viewHolder, getItem(position));
+
+        final User user = getItem(position).getUserToChatWith();
+
+        if (viewHolder.userLocationImageButton.getVisibility() == View.VISIBLE) {
+            viewHolder.userLocationImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
+                    ActivityUtils.navigate(activity, MapsActivity.class, bundle, false);
+                }
+            });
+        }
+
+        viewHolder.userProfileImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putString(UserActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
+                ActivityUtils.navigate(activity, UserActivity.class, bundle, false);
+            }
+        });
 
         return convertView;
     }
@@ -67,6 +100,12 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveChat> {
 
             viewHolder.rightBottomTextView.setVisibility(View.VISIBLE);
             viewHolder.rightBottomTextView.setText(new PrettyTime().format(chat.getMyMessage().getDate()));
+        }
+
+        if (LocationEventManager.instance().getGeolocationItemsForUser(chat.getUserToChatWith()) == null) {
+            viewHolder.userLocationImageButton.setVisibility(View.GONE);
+        } else {
+            viewHolder.userLocationImageButton.setVisibility(View.VISIBLE);
         }
 
         viewHolder.availabilityImageView.setImageResource(

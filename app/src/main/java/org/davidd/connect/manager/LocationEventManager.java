@@ -8,6 +8,7 @@ import org.davidd.connect.debug.L;
 import org.davidd.connect.model.User;
 import org.davidd.connect.xmpp.GeolocationEventElement;
 import org.davidd.connect.xmpp.GeolocationItem;
+import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
@@ -62,6 +63,8 @@ public class LocationEventManager {
         }
 
         savedLocations.put(publisher, item);
+
+        EventBus.getDefault().post(new SavedUserLocationsChangedEvent());
     }
 
     /**
@@ -69,6 +72,10 @@ public class LocationEventManager {
      */
     public void sendUserLocationItem(GeolocationItem item) {
         L.d(new Object() {});
+
+        savedLocations.put(UserManager.instance().getCurrentUser(), item);
+
+        EventBus.getDefault().post(new SavedUserLocationsChangedEvent());
 
         createGeolocationNodeIfDoesNotExist();
 

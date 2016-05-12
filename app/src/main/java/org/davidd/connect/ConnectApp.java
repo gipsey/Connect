@@ -29,6 +29,6 @@ public class ConnectApp extends Application {
         connectApp = this;
         mainHandler = new Handler(Looper.getMainLooper());
 
-        RosterManager.instance(); // this will initialize the listeners
+
     }
 }

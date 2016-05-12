@@ -80,7 +80,9 @@ public class MyLocationManager implements LocationListener {
     public void onLocationChanged(Location location) {
         L.d(new Object() {}, "Location = " + location.toString());
 
-        LocationEventManager.instance().sendUserLocationItem(buildGeolocationItemFromLocation(location));
+        GeolocationItem item = buildGeolocationItemFromLocation(location);
+
+        LocationEventManager.instance().sendUserLocationItem(item);
     }
 
     @Override

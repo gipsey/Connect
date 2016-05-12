@@ -44,7 +44,5 @@ public class ActivityUtils {
         }
     }
 
-    private void waitSomeTime(Runnable runnable, int millis) {
-        new Handler().postDelayed(runnable, millis);
-    }
+
 }

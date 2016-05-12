@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.davidd.connect.R;
+import org.davidd.connect.component.service.LocationService;
 import org.davidd.connect.connection.ConnectionService;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.connection.event.OnAuthFailedEvent;
@@ -46,6 +47,11 @@ public abstract class ConnectionActivity extends Activity {
 
     public void onAuthSucceeded(OnAuthSucceededEvent event) {
         L.d(new Object() {});
+
+        Intent serviceIntent = new Intent(this, LocationService.class);
+        serviceIntent.putExtra(LocationService.AUTH_SUCCEEDED_TAG, "");
+        startService(serviceIntent);
+
         ActivityUtils.navigate(this, ControlActivity.class, null, Intent.FLAG_ACTIVITY_CLEAR_TOP, true);
     }
 

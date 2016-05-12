@@ -14,7 +14,8 @@ import java.util.concurrent.Executors;
 
 public class LocationService extends Service {
 
-    public static final String LOCATION_CHANGED_TAG = "LocationChangedTag";
+    public static final String LOCATION_CHANGED_TAG = "LOCATION_CHANGED_TAG";
+    public static final String AUTH_SUCCEEDED_TAG = "AUTH_SUCCEEDED_TAG";
 
     private ExecutorService executorService;
 
@@ -42,6 +43,10 @@ public class LocationService extends Service {
                     setLocationReceivingProgress();
                 } else if (intent.hasExtra(LOCATION_CHANGED_TAG)) {
                     L.d(new Object() {}, "Intent contains LOCATION_CHANGED_TAG");
+
+                    setLocationReceivingProgress();
+                } else if (intent.hasExtra(AUTH_SUCCEEDED_TAG)) {
+                    L.d(new Object() {}, "Intent contains AUTH_SUCCEEDED_TAG");
 
                     setLocationReceivingProgress();
                 }

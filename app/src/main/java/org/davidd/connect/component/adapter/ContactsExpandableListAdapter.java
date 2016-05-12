@@ -1,6 +1,8 @@
 package org.davidd.connect.component.adapter;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +11,11 @@ import android.widget.ExpandableListView;
 import android.widget.TextView;
 
 import org.davidd.connect.R;
+import org.davidd.connect.component.activity.MapsActivity;
+import org.davidd.connect.component.activity.UserActivity;
+import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.model.User;
+import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
 
 import java.util.List;
@@ -17,7 +23,11 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
+import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
+
 public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
+
+    private Activity activity;
 
     private List<ContactGroup> contactGroups;
     private ExpandableListView expandableListView;
@@ -25,6 +35,7 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
 
     public ContactsExpandableListAdapter(Context context, List<ContactGroup> contactGroups, ExpandableListView expandableListView) {
         super();
+        this.activity = (Activity) context;
         this.contactGroups = contactGroups;
         this.expandableListView = expandableListView;
 
@@ -96,7 +107,28 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
             viewHolder = (ContactViewHolder) convertView.getTag();
         }
 
-        setupContact(viewHolder, contactGroups.get(groupPosition).getUsers().get(childPosition));
+        final User user = contactGroups.get(groupPosition).getUsers().get(childPosition);
+        setupContact(viewHolder, user);
+
+        if (viewHolder.userLocationImageButton.getVisibility() == View.VISIBLE) {
+            viewHolder.userLocationImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
+                    ActivityUtils.navigate(activity, MapsActivity.class, bundle, false);
+                }
+            });
+        }
+
+        viewHolder.userProfileImageButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Bundle bundle = new Bundle();
+                bundle.putString(UserActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
+                ActivityUtils.navigate(activity, UserActivity.class, bundle, false);
+            }
+        });
 
         return convertView;
     }
@@ -121,6 +153,12 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
         } else {
             viewHolder.statusTextView.setVisibility(View.VISIBLE);
             viewHolder.statusTextView.setText(status);
+        }
+
+        if (LocationEventManager.instance().getGeolocationItemsForUser(user) == null) {
+            viewHolder.userLocationImageButton.setVisibility(View.GONE);
+        } else {
+            viewHolder.userLocationImageButton.setVisibility(View.VISIBLE);
         }
 
         viewHolder.rightBottomTextView.setText(user.getUserPresence().getUserPresenceType().getStatus());

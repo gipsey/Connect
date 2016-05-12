@@ -144,6 +144,16 @@
                     android:textSize="@dimen/textSizeLarge"/>
             </LinearLayout>
 
+            <ImageButton
+                android:id="@+id/user_location_imageButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="@dimen/spacingLarge"
+                android:layout_marginTop="@dimen/spacingLarge"
+                android:background="@color/transparent"
+                android:src="@drawable/ic_my_location_black_48dp"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

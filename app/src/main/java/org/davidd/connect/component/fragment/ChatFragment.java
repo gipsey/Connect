@@ -19,6 +19,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.davidd.connect.R;
 import org.davidd.connect.component.activity.ChatActivity;
@@ -27,6 +28,7 @@ import org.davidd.connect.component.activity.UserActivity;
 import org.davidd.connect.component.adapter.ChatAdapter;
 import org.davidd.connect.component.adapter.ContactsHelper;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.manager.UserPresenceChangedMessage;
@@ -35,6 +37,7 @@ import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresenceType;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
+import org.davidd.connect.util.DisplayUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -122,8 +125,17 @@ public class ChatFragment extends Fragment implements
                         ActivityUtils.navigate(getActivity(), UserActivity.class, bundle, false);
                         return true;
                     case R.id.user_location:
+                        if (LocationEventManager.instance().getGeolocationItemsForUser(userToChatWith) == null) {
+                            DisplayUtils.hideSoftKeyboard(getActivity(), messageEditText);
+
+                            Toast.makeText(getActivity(), "Sorry, but " + userToChatWith.getUserJIDProperties().getName() +
+                                    "'s location is not available", Toast.LENGTH_LONG).show();
+                            return true;
+                        }
+
                         bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(userToChatWith));
                         ActivityUtils.navigate(getActivity(), MapsActivity.class, bundle, false);
+
                         return true;
                     default:
                         return false;

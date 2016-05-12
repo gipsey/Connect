@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +24,7 @@ import org.davidd.connect.component.adapter.PresenceStatusAdapter;
 import org.davidd.connect.connection.ConnectionService;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.connection.event.OnDisconnectEvent;
+import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.User;
@@ -70,6 +72,9 @@ public class UserActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Bind(R.id.frameLayout_status_editText)
     EditText statusEditText;
+
+    @Bind(R.id.user_location_imageButton)
+    ImageButton locationImageButton;
 
     @Bind(R.id.frameLayout_logOut_button)
     Button logOutButton;
@@ -167,6 +172,21 @@ public class UserActivity extends AppCompatActivity implements AdapterView.OnIte
             return true;
         }
         return false;
+    }
+
+    @OnClick(R.id.user_location_imageButton)
+    void onLocationClick(View view) {
+        if (!user.equals(UserManager.instance().getCurrentUser())) {
+            if (LocationEventManager.instance().getGeolocationItemsForUser(user) == null) {
+                Toast.makeText(this, "Sorry, but " + user.getUserJIDProperties().getName() +
+                        "'s location is not available", Toast.LENGTH_LONG).show();
+                return;
+            }
+        }
+
+        Bundle bundle = new Bundle();
+        bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
+        ActivityUtils.navigate(this, MapsActivity.class, bundle, false);
     }
 
     @OnClick(R.id.frameLayout_logOut_button)
