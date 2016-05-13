@@ -36,6 +36,7 @@
     <string-array name="control_view_tab_titles">
         <item>ACTIVE CHATS</item>
         <item>CONTACTS</item>
+        <item>ROOMS</item>
     </string-array>
 
     <string name="user_status_available">Available</string>
@@ -46,6 +47,7 @@
     <string name="unfiled_group_name">Others</string>
     <string name="no_active_chats">There are no active chats, so start one…</string>
     <string name="no_contacts">There are no contacts to show…</string>
+    <string name="no_rooms">There are no rooms to show…</string>
 
     <!-- drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>

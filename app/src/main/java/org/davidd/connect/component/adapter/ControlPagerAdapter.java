@@ -6,12 +6,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import org.davidd.connect.R;
-import org.davidd.connect.component.fragment.ActiveChatsFragment;
-import org.davidd.connect.component.fragment.ContactsFragment;
+import org.davidd.connect.component.fragment.ControlActiveChatsFragment;
+import org.davidd.connect.component.fragment.ControlContactsFragment;
+import org.davidd.connect.component.fragment.ControlRoomsFragment;
 
 public class ControlPagerAdapter extends FragmentPagerAdapter {
 
-    public static final int NUMBER_OF_TABS = 2;
+    public static final int NUMBER_OF_TABS = 3;
     private String[] mTitleArray;
 
     public ControlPagerAdapter(Context context, FragmentManager fm) {
@@ -23,9 +24,11 @@ public class ControlPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new ActiveChatsFragment();
+                return new ControlActiveChatsFragment();
             case 1:
-                return new ContactsFragment();
+                return new ControlContactsFragment();
+            case 2:
+                return new ControlRoomsFragment();
             default:
                 throw new UnsupportedOperationException("There is no other fragment to inflate. The position is incorrect");
         }

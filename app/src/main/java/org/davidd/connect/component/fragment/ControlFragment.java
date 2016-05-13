@@ -51,8 +51,8 @@ public class ControlFragment extends Fragment {
 
             @Override
             public void onPageSelected(int position) {
-                ControlActivityFragment fragment =
-                        (ControlActivityFragment) getChildFragmentManager().getFragments().get(position);
+                ControlTabFragment fragment =
+                        (ControlTabFragment) getChildFragmentManager().getFragments().get(position);
                 fragment.onPagesSelected();
             }
 

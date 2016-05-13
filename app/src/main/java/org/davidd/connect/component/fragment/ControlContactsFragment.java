@@ -21,7 +21,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ContactsFragment extends ControlActivityFragment implements RosterManager.UserContactsUpdatedListener {
+public class ControlContactsFragment extends ControlTabFragment implements RosterManager.UserContactsUpdatedListener {
 
     @Bind(R.id.contacts_expandableListView)
     ExpandableListView expandableListView;
@@ -122,9 +122,9 @@ public class ContactsFragment extends ControlActivityFragment implements RosterM
 //            at java.util.ArrayList.throwIndexOutOfBoundsException(ArrayList.java:255)
 //            at java.util.ArrayList.get(ArrayList.java:308)
 //            at java.util.Collections$UnmodifiableList.get(Collections.java:1050)
-//            at org.davidd.connect.component.fragment.ContactsFragment.updateContactGroups(ContactsFragment.java:119)
-//            at org.davidd.connect.component.fragment.ContactsFragment.showUserContacts(ContactsFragment.java:104)
-//            at org.davidd.connect.component.fragment.ContactsFragment.userContactsUpdated(ContactsFragment.java:99)
+//            at org.davidd.connect.component.fragment.ControlContactsFragment.updateContactGroups(ControlContactsFragment.java:119)
+//            at org.davidd.connect.component.fragment.ControlContactsFragment.showUserContacts(ControlContactsFragment.java:104)
+//            at org.davidd.connect.component.fragment.ControlContactsFragment.userContactsUpdated(ControlContactsFragment.java:99)
         }
     }
 

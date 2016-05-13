@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    android:id="@+id/main_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ListView
+        android:id="@+id/rooms_listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:childDivider="@drawable/list_view_divider"/>
+
+    <TextView
+        android:id="@+id/rooms_empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textAllCaps="false"
+        android:textSize="@dimen/textSizeLarge"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/addRoom_floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/spacingLarge"
+        android:src="@drawable/ic_add_white_36dp"/>
+
+</android.support.design.widget.CoordinatorLayout>

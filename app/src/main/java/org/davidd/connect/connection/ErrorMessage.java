@@ -3,6 +3,7 @@ package org.davidd.connect.connection;
 import android.support.annotation.NonNull;
 
 public class ErrorMessage {
+
     private String message;
     private Throwable throwable;
 

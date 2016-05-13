@@ -1,11 +1,10 @@
 package org.davidd.connect.connection;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 
-import org.davidd.connect.component.service.LocationService;
 import org.davidd.connect.connection.event.OnAuthFailedEvent;
 import org.davidd.connect.connection.event.OnAuthSucceededEvent;
 import org.davidd.connect.connection.event.OnConnectionFailedEvent;
@@ -16,6 +15,7 @@ import org.davidd.connect.connection.packetListener.AllIncomingPacketListener;
 import org.davidd.connect.connection.packetListener.AllOutgoingPacketListener;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
+import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.model.UserPresenceType;
@@ -39,9 +39,11 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
 import org.jivesoftware.smackx.caps.EntityCapsManager;
 import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
+import org.jivesoftware.smackx.muc.MultiUserChatManager;
 import org.jivesoftware.smackx.pep.PEPManager;
 import org.jivesoftware.smackx.pubsub.PubSubManager;
 import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -60,6 +62,7 @@ public class MyConnectionManager implements ConnectionListener {
 
     private Roster roster;
     private ChatManager chatManager;
+    private MultiUserChatManager multiUserChatManager;
     private PubSubManager pubSubManager;
     private PEPManager pepManager;
 
@@ -164,39 +167,15 @@ public class MyConnectionManager implements ConnectionListener {
      * Call this only from {@link MyConnectionManager#connect(UserJIDProperties, String)}
      * after checking the parameters.
      */
-    private void createConnection(final UserJIDProperties JIDProperties, final String password) {
+    @VisibleForTesting
+    void createConnection(final UserJIDProperties JIDProperties, final String password) {
         L.d(new Object() {}, "JID: " + JIDProperties.getJID() + ", password: " + password);
 
         new AsyncTask<Void, Void, Throwable>() {
             @Override
             protected Throwable doInBackground(Void... params) {
                 try {
-                    // Create the connection object
-                    XMPPTCPConnectionConfiguration.Builder builder = initializeConnection();
-
-                    builder.setUsernameAndPassword(JIDProperties.getName(), password);
-                    builder.setServiceName(JidCreate.from(JIDProperties.getDomain()).asDomainBareJid());
-                    builder.setHost(JIDProperties.getDomain());
-                    builder.setSendPresence(false);
-
-                    xmppTcpConnection = new XMPPTCPConnection(builder.build());
-                    xmppTcpConnection.addConnectionListener(MyConnectionManager.this);
-
-                    ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(xmppTcpConnection);
-                    reconnectionManager.enableAutomaticReconnection();
-
-                    ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(xmppTcpConnection);
-                    sdm.addFeature("http://jabber.org/protocol/geoloc");
-                    sdm.addFeature("http://jabber.org/protocol/geoloc+notify");
-
-                    EntityCapsManager capsManager = EntityCapsManager.getInstanceFor(xmppTcpConnection);
-                    capsManager.enableEntityCaps();
-
-                    ProviderManager.addExtensionProvider("event", "http://jabber.org/protocol/pubsub#event", new GeolocationExtensionProvider());
-
-                    pepManager = PEPManager.getInstanceFor(xmppTcpConnection);
-                    pepManager.addPEPListener(AllPepEventListener.getInstance());
-
+                    xmppTcpConnection = createConnectionInstance(JIDProperties, password, MyConnectionManager.this);
                     xmppTcpConnection.connect();
                 } catch (SmackException | XMPPException | IOException | InterruptedException e) {
                     e.printStackTrace();
@@ -217,6 +196,37 @@ public class MyConnectionManager implements ConnectionListener {
                 }
             }
         }.execute();
+    }
+
+    @VisibleForTesting
+    XMPPTCPConnection createConnectionInstance(final UserJIDProperties JIDProperties, final String password, ConnectionListener listener) throws XmppStringprepException {
+        // Create the connection object
+        XMPPTCPConnectionConfiguration.Builder builder = initializeConnection();
+
+        builder.setUsernameAndPassword(JIDProperties.getName(), password);
+        builder.setServiceName(JidCreate.from(JIDProperties.getDomain()).asDomainBareJid());
+        builder.setHost(JIDProperties.getDomain());
+        builder.setSendPresence(false);
+
+        XMPPTCPConnection xmppTcpConnection = new XMPPTCPConnection(builder.build());
+        xmppTcpConnection.addConnectionListener(listener);
+
+        ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(xmppTcpConnection);
+        reconnectionManager.enableAutomaticReconnection();
+
+        ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(xmppTcpConnection);
+        sdm.addFeature("http://jabber.org/protocol/geoloc");
+        sdm.addFeature("http://jabber.org/protocol/geoloc+notify");
+
+        EntityCapsManager capsManager = EntityCapsManager.getInstanceFor(xmppTcpConnection);
+        capsManager.enableEntityCaps();
+
+        ProviderManager.addExtensionProvider("event", "http://jabber.org/protocol/pubsub#event", new GeolocationExtensionProvider());
+
+        pepManager = PEPManager.getInstanceFor(xmppTcpConnection);
+        pepManager.addPEPListener(AllPepEventListener.getInstance());
+
+        return xmppTcpConnection;
     }
 
     private XMPPTCPConnectionConfiguration.Builder initializeConnection() {
@@ -355,6 +365,11 @@ public class MyConnectionManager implements ConnectionListener {
             chatManager = null;
         }
 
+        if (multiUserChatManager != null) {
+            multiUserChatManager.removeInvitationListener(MyMultiUserChatManager.instance());
+            multiUserChatManager = null;
+        }
+
         pubSubManager = null;
         pepManager = null;
     }
@@ -367,6 +382,10 @@ public class MyConnectionManager implements ConnectionListener {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        // set up multi user chat manager
+        multiUserChatManager = MultiUserChatManager.getInstanceFor(xmppTcpConnection);
+        multiUserChatManager.addInvitationListener(MyMultiUserChatManager.instance());
 
         if (ENABLE_DEBUG_MODE) {
             triggerServerServiceDiscoveryInformation(xmppTcpConnection);
@@ -381,6 +400,11 @@ public class MyConnectionManager implements ConnectionListener {
         return xmppTcpConnection;
     }
 
+    @VisibleForTesting
+    void setXmppTcpConnection(XMPPTCPConnection xmppTcpConnection) {
+        this.xmppTcpConnection = xmppTcpConnection;
+    }
+
     public boolean isConnected() {
         return getXmppTcpConnection() != null && getXmppTcpConnection().isConnected();
     }
@@ -392,6 +416,10 @@ public class MyConnectionManager implements ConnectionListener {
 
     public ChatManager getChatManager() {
         return chatManager;
+    }
+
+    public MultiUserChatManager getMultiUserChatManager() {
+        return multiUserChatManager;
     }
 
     public PubSubManager getPubSubManager() {

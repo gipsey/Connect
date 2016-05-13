@@ -25,7 +25,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ActiveChatsFragment extends ControlActivityFragment implements
+public class ControlActiveChatsFragment extends ControlTabFragment implements
         MyChatManager.ChatUpdatedListener {
 
     @Bind(R.id.active_chats_listView)

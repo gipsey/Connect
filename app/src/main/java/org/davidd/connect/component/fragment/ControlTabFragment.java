@@ -5,7 +5,7 @@ import android.support.v4.app.Fragment;
 
 import org.davidd.connect.component.activity.NavigateToChatListener;
 
-public abstract class ControlActivityFragment extends Fragment {
+public abstract class ControlTabFragment extends Fragment {
 
     protected NavigateToChatListener navigateToChatListener;
 
