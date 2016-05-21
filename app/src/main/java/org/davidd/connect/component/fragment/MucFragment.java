@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.KeyEvent;
@@ -19,29 +20,18 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.davidd.connect.R;
 import org.davidd.connect.component.activity.ChatActivity;
-import org.davidd.connect.component.activity.MapsActivity;
-import org.davidd.connect.component.activity.UserActivity;
 import org.davidd.connect.component.adapter.ChatAdapter;
-import org.davidd.connect.component.adapter.ContactsHelper;
 import org.davidd.connect.debug.L;
-import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.MyChatManager;
-import org.davidd.connect.manager.RosterManager;
-import org.davidd.connect.manager.UserPresenceChangedMessage;
+import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.model.MyMessage;
-import org.davidd.connect.model.User;
-import org.davidd.connect.model.UserPresenceType;
-import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
-import org.davidd.connect.util.DisplayUtils;
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.jxmpp.jid.EntityFullJid;
 
 import java.util.ArrayList;
 
@@ -50,12 +40,10 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
 
-import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
-
-public class ChatFragment extends Fragment implements
+public class MucFragment extends Fragment implements
         MyChatManager.MessageReceivedListener {
 
-    public static final String TAG = ChatFragment.class.getName();
+    public static final String TAG = MucFragment.class.getName();
 
     @Bind(R.id.chat_toolbar)
     protected Toolbar toolbar;
@@ -79,7 +67,7 @@ public class ChatFragment extends Fragment implements
 
     private ChatAdapter chatAdapter;
 
-    private User userToChatWith;
+    private MultiUserChat muc;
 
     @Override
     public void onAttach(Context context) {
@@ -91,12 +79,9 @@ public class ChatFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        userToChatWith = createGsonWithExcludedFields().fromJson(
-                getArguments().getString(ChatActivity.USER_TO_CHAT_WITH), User.class);
-        userToChatWith.setRosterEntry(
-                RosterManager.instance().getRosterEntryForUser(userToChatWith.getUserJIDProperties()));
-        userToChatWith.setUserPresence(
-                RosterManager.instance().getUserPresenceForUser(userToChatWith.getUserJIDProperties()));
+        String roomName = getArguments().getString(ChatActivity.ROOM_NAME_TAG);
+
+        muc = MyMultiUserChatManager.instance().getMucByFullName(roomName);
     }
 
     @Override
@@ -119,30 +104,32 @@ public class ChatFragment extends Fragment implements
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Bundle bundle = new Bundle();
                 switch (item.getItemId()) {
                     case R.id.user_profile:
-                        bundle.putString(UserActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(userToChatWith));
-                        ActivityUtils.navigate(getActivity(), UserActivity.class, bundle, false);
-                        return true;
-                    case R.id.user_location:
-                        if (LocationEventManager.instance().getGeolocationItemsForUser(userToChatWith) == null) {
-                            DisplayUtils.hideSoftKeyboard(getActivity(), messageEditText);
 
-                            Toast.makeText(getActivity(), "Sorry, but " + userToChatWith.getUserJIDProperties().getName() +
-                                    "'s location is not available", Toast.LENGTH_LONG).show();
-                            return true;
+                        String users = "";
+
+                        for (EntityFullJid jid : muc.getOccupants()) {
+                            users += jid.getResourceOrNull().toString() + "\n";
                         }
 
-                        bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(userToChatWith));
-                        ActivityUtils.navigate(getActivity(), MapsActivity.class, bundle, false);
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                                .setPositiveButton("CLOSE", null)
+                                .setTitle("Active occupants of " + muc.getRoom().getLocalpart().toString() + " room")
+                                .setMessage(users);
 
+                        builder.create().show();
+
+                        return true;
+                    case R.id.user_location:
+                        // TODO
                         return true;
                     default:
                         return false;
                 }
             }
         });
+
         toolbar.setNavigationIcon(R.drawable.ic_arrow_left_white);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
@@ -151,7 +138,7 @@ public class ChatFragment extends Fragment implements
             }
         });
 
-        userNameTextView.setText(userToChatWith.getUserJIDProperties().getNameAndDomain());
+        userNameTextView.setText(muc.getRoom().toString());
 
         chatAdapter = new ChatAdapter(getActivity(), R.layout.chat_row, new ArrayList<MyMessage>());
         chatListView.setAdapter(chatAdapter);
@@ -164,29 +151,16 @@ public class ChatFragment extends Fragment implements
     @Override
     public void onStart() {
         super.onStart();
-        MyChatManager.instance().addMessageReceivedListener(userToChatWith, this);
-        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        updateUserPresenceOnUi();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        MyChatManager.instance().removeMessageReceivedListener(userToChatWith, this);
-        EventBus.getDefault().unregister(this);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void userPresenceChanged(UserPresenceChangedMessage message) {
-        if (message.getUser().equals(userToChatWith)) {
-            userToChatWith.setUserPresence(message.getUser().getUserPresence());
-            updateUserPresenceOnUi();
-        }
     }
 
     @OnEditorAction(R.id.footer_chat_message_edit_text)
@@ -203,42 +177,22 @@ public class ChatFragment extends Fragment implements
         sendMessage();
     }
 
-    private void updateUserPresenceOnUi() {
-        UserPresenceType userPresenceType;
-
-        if (userToChatWith.getUserPresence() != null) {
-            userPresenceType = userToChatWith.getUserPresence().getUserPresenceType();
-        } else {
-            userPresenceType = UserPresenceType.OFFLINE;
-        }
-
-        availabilityImageView.setImageResource(ContactsHelper.getImageResourceFromUserPresence(userPresenceType));
-
-        if (userToChatWith.getUserPresence() != null && !DataUtils.isEmpty(userToChatWith.getUserPresence().getPresence().getStatus())) {
-            statusTextView.setVisibility(View.VISIBLE);
-            statusTextView.setText(userToChatWith.getUserPresence().getPresence().getStatus());
-        } else {
-            statusTextView.setVisibility(View.GONE);
-            statusTextView.setText(null);
-        }
-    }
-
     private void sendMessage() {
-        String message = messageEditText.getText().toString().trim();
-        messageEditText.setText(null);
-
-        if (DataUtils.isEmpty(message)) {
-            return;
-        }
-
-        // send it
-        MyMessage myMessage = MyChatManager.instance().sendMessage(userToChatWith, message);
-
-        if (myMessage != null) {
-            // show locally
-            chatAdapter.add(myMessage);
-            chatAdapter.notifyDataSetChanged();
-        }
+//        String message = messageEditText.getText().toString().trim();
+//        messageEditText.setText(null);
+//
+//        if (DataUtils.isEmpty(message)) {
+//            return;
+//        }
+//
+//        // send it
+//        MyMessage myMessage = MyChatManager.instance().sendMessage(userToChatWith, message);
+//
+//        if (myMessage != null) {
+//            // show locally
+//            chatAdapter.add(myMessage);
+//            chatAdapter.notifyDataSetChanged();
+//        }
     }
 
     @Override

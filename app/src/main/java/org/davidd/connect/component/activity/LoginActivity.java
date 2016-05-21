@@ -33,6 +33,7 @@ import org.davidd.connect.manager.PreferencesManager;
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
+import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DisplayUtils;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -87,7 +88,15 @@ public class LoginActivity extends ConnectionActivity implements LoaderCallbacks
             }
         });
 
-        loginFormView = findViewById(R.id.login_scrollView);
+        Button toRegistrationButton = (Button) findViewById(R.id.to_registration_button);
+        toRegistrationButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ActivityUtils.navigate(LoginActivity.this, RegisterActivity.class, false);
+            }
+        });
+
+        loginFormView = findViewById(R.id.login_baseView);
         progressView = findViewById(R.id.progressBar_layout);
     }
 
@@ -180,35 +189,24 @@ public class LoginActivity extends ConnectionActivity implements LoaderCallbacks
     /**
      * Shows the progress UI and hides the login form.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            loginFormView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
+        loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+        loginFormView.animate().setDuration(shortAnimTime).alpha(show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            }
+        });
 
-            progressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
-            progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            progressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
-            loginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
+        progressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        progressView.animate().setDuration(shortAnimTime).alpha(show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                progressView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+            }
+        });
     }
 
     @Override

@@ -9,7 +9,7 @@
         android:id="@+id/rooms_listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:childDivider="@drawable/list_view_divider"/>
+        android:childDivider="@drawable/divider"/>
 
     <TextView
         android:id="@+id/rooms_empty_view"

@@ -61,10 +61,20 @@
 
         <activity
             android:name=".component.activity.LoginActivity"
-            android:windowSoftInputMode="stateHidden"/>
+            android:windowSoftInputMode="adjustResize"/>
+
+        <activity
+            android:name=".component.activity.RegisterActivity"
+            android:windowSoftInputMode="adjustResize"/>
 
         <activity
             android:name=".component.activity.ChatActivity"
+            android:parentActivityName=".component.activity.ControlActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize"/>
+
+        <activity
+            android:name=".component.activity.AddOccupantsActivity"
             android:parentActivityName=".component.activity.ControlActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize"/>

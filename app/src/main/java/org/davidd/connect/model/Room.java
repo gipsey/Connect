@@ -1,21 +1,23 @@
 package org.davidd.connect.model;
 
+import org.jivesoftware.smackx.muc.MultiUserChat;
+
 public class Room {
 
-    private String roomName;
+    private MultiUserChat muc;
 
     public Room() {
     }
 
-    public Room(String roomName) {
-        this.roomName = roomName;
+    public Room(MultiUserChat muc) {
+        this.muc = muc;
     }
 
-    public String getRoomName() {
-        return roomName;
+    public MultiUserChat getMuc() {
+        return muc;
     }
 
-    public void setRoomName(String roomName) {
-        this.roomName = roomName;
+    public void setMuc(MultiUserChat muc) {
+        this.muc = muc;
     }
 }

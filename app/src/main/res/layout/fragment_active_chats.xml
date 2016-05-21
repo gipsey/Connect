@@ -8,7 +8,7 @@
         android:id="@+id/active_chats_listView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@drawable/list_view_divider"/>
+        android:divider="@drawable/divider"/>
 
     <TextView
         android:id="@+id/active_chats_empty_view"

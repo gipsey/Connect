@@ -3,7 +3,6 @@ package org.davidd.connect.manager;
 import android.support.annotation.Nullable;
 
 import org.davidd.connect.connection.MyConnectionManager;
-import org.davidd.connect.debug.GeolocationDebugger;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.model.User;
 import org.davidd.connect.xmpp.GeolocationEventElement;
@@ -41,10 +40,6 @@ public class LocationEventManager {
             locationEventManager = new LocationEventManager();
         }
         return locationEventManager;
-    }
-
-    public void debugPressed() {
-        GeolocationDebugger.startPublishingLocations();
     }
 
     @Nullable

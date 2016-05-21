@@ -24,7 +24,7 @@
                 android:title="@string/drawer_about"/>
             <item
                 android:id="@+id/drawer_debug_geoloc"
-                android:title="@string/drawer_debug_geoloc"/>
+                android:title="@string/drawer_debug"/>
             <item
                 android:id="@+id/drawer_debug_map"
                 android:title="@string/drawer_debug_map"/>

@@ -27,14 +27,8 @@ public class UserJIDProperties {
 
     public UserJIDProperties(@NonNull String JID) {
         this.JID = JID;
-        createPropertiesFromJID();
-    }
 
-    public UserJIDProperties(@NonNull String name, @NonNull String domain, String resource) {
-        this.name = name;
-        this.domain = domain;
-        this.resource = resource;
-        createJIDFromProperties();
+        createPropertiesFromJID();
     }
 
     public String getJID() {

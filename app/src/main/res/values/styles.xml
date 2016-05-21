@@ -17,9 +17,31 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
-    <style name="Toolbar" parent="Widget.AppCompat.Toolbar">
-        <item name="android:theme">@style/AppTheme</item>
+    <style name="Toolbar" parent="AppTheme">
+        <item name="android:textColorPrimaryInverse">@color/white</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
+        <item name="android:actionMenuTextColor">@color/white</item>
         <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:actionOverflowButtonStyle">@style/ActionMenuStyle</item>
+    </style>
+
+    <style name="ActionMenuStyle" parent="AppTheme">
+        <item name="android:color">@color/white</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textColorPrimaryInverse">@color/white</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondaryInverse">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
+    </style>
+
+    <style name="PopupTheme" parent="AppTheme">
+        <item name="android:color">@color/white</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textColorPrimaryInverse">@color/white</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondaryInverse">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
 
     <style name="CollapsingToolbarTextAppearance" parent="@style/TextAppearance.Widget.AppCompat.Toolbar.Title">

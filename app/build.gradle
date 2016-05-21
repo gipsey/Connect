@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "org.davidd.connect"
-        minSdkVersion 15
+        minSdkVersion 17
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -41,9 +41,6 @@ dependencies {
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
-    compile "com.android.support:recyclerview-v7:${supportLibVersion}"
-    compile "com.android.support:percent:${supportLibVersion}"
-    compile "com.android.support:support-annotations:${supportLibVersion}"
 
     compile 'com.google.android.gms:play-services-location:8.4.0'
     compile 'com.google.android.gms:play-services-maps:8.4.0'
@@ -59,6 +56,5 @@ dependencies {
 
     compile 'org.igniterealtime.smack:smack-android:4.2.0-alpha3'
     compile 'org.igniterealtime.smack:smack-tcp:4.2.0-alpha3'
-    compile 'org.igniterealtime.smack:smack-sasl-provided:4.2.0-alpha3'
     compile 'org.igniterealtime.smack:smack-extensions:4.2.0-alpha3'
 }

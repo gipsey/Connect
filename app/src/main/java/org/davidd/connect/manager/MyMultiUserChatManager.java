@@ -1,29 +1,42 @@
 package org.davidd.connect.manager;
 
+import android.support.annotation.Nullable;
+
+import org.davidd.connect.component.event.RoomsUpdatedEvent;
+import org.davidd.connect.component.exception.RoomNameExistsException;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.model.User;
+import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.HostedRoom;
 import org.jivesoftware.smackx.muc.InvitationListener;
+import org.jivesoftware.smackx.muc.MUCAffiliation;
+import org.jivesoftware.smackx.muc.MucConfigFormManager;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smackx.muc.MultiUserChatException;
 import org.jivesoftware.smackx.muc.MultiUserChatManager;
+import org.jivesoftware.smackx.muc.Occupant;
+import org.jivesoftware.smackx.xdata.Form;
+import org.jivesoftware.smackx.xdata.FormField;
 import org.jxmpp.jid.DomainBareJid;
 import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.jid.parts.Resourcepart;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MyMultiUserChatManager implements InvitationListener {
 
+    public static final String SERVICE = "conference.localhost";
     private static MyMultiUserChatManager myMultiUserChatManager;
+
+    private List<MultiUserChat> chats;
 
     private MyMultiUserChatManager() {
     }
@@ -40,18 +53,14 @@ public class MyMultiUserChatManager implements InvitationListener {
 
     }
 
-    public List<DomainBareJid> getMUCServices() {
-        List<DomainBareJid> services = new ArrayList<>();
-
+    public DomainBareJid getMUCService() {
+        DomainBareJid jid = null;
         try {
-            services = getMUCManager().getXMPPServiceDomains();
-        } catch (XMPPException.XMPPErrorException |
-                SmackException.NoResponseException | InterruptedException |
-                SmackException.NotConnectedException e) {
-            L.ex(e);
+            jid = JidCreate.domainBareFrom(SERVICE);
+        } catch (XmppStringprepException e) {
+            e.printStackTrace();
         }
-
-        return services;
+        return jid;
     }
 
     /**
@@ -76,45 +85,24 @@ public class MyMultiUserChatManager implements InvitationListener {
             L.ex(e);
         }
 
+        {
+            String s = "";
+            for (HostedRoom r : hostedRooms) {
+                s += " " + r.getJid();
+            }
+            L.d(new Object() {}, "Service = " + serviceJid.toString() + " " + s);
+        }
+
         return hostedRooms;
     }
 
-    public Map<DomainBareJid, List<HostedRoom>> getAllHostedRoomsOnServerByService() {
-        List<DomainBareJid> allService = getMUCServices();
-        Map<DomainBareJid, List<HostedRoom>> allRoomsByService = new LinkedHashMap<>();
+    public List<HostedRoom> getAllHostedRoomsOnServer() {
+        List<HostedRoom> allRoomsByService = new ArrayList<>();
 
-        for (DomainBareJid serviceJid : allService) {
-            allRoomsByService.put(serviceJid, getHostedRoomsOfService(serviceJid));
-        }
+        DomainBareJid service = getMUCService();
+        allRoomsByService.addAll(getHostedRoomsOfService(service));
 
         return allRoomsByService;
-    }
-
-    public List<HostedRoom> getAllHostedRoomsOnServer() {
-        List<DomainBareJid> allService = getMUCServices();
-        List<HostedRoom> allRooms = new ArrayList<>();
-
-        for (DomainBareJid serviceJid : allService) {
-            allRooms.addAll(getHostedRoomsOfService(serviceJid));
-        }
-
-        return allRooms;
-    }
-
-    public DomainBareJid getServiceOfRoom(String localPartOfRoomName) {
-        Map<DomainBareJid, List<HostedRoom>> allRoomsByService = getAllHostedRoomsOnServerByService();
-
-        for (DomainBareJid service : allRoomsByService.keySet()) {
-            List<HostedRoom> hostedRooms = allRoomsByService.get(service);
-
-            for (HostedRoom room : hostedRooms) {
-                if (room.getJid().getLocalpart().toString().equals(localPartOfRoomName)) {
-                    return service;
-                }
-            }
-        }
-
-        return null;
     }
 
     public List<EntityBareJid> getJoinedRoomsOfCurrentUser() {
@@ -132,23 +120,188 @@ public class MyMultiUserChatManager implements InvitationListener {
         return rooms;
     }
 
-    /**
-     * @param jidOfTheNewRoomAsString should be a valid room name(akarmi@conference.localhost)
-     */
-    public MultiUserChat createInstantRoom(String jidOfTheNewRoomAsString) throws XmppStringprepException {
-        EntityBareJid entityBareJid = JidCreate.entityBareFrom(jidOfTheNewRoomAsString);
+    public void getUserRoomWithOwnerAffiliationAsync() {
+        if (chats == null || chats.isEmpty()) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    chats = getUserRoomWithOwnerAffiliationSync();
+                    EventBus.getDefault().post(new RoomsUpdatedEvent(chats));
+                }
+            }).start();
+        } else {
+            EventBus.getDefault().post(new RoomsUpdatedEvent(chats));
+        }
+    }
 
-        return createInstantRoom(entityBareJid);
+    private List<MultiUserChat> getUserRoomWithOwnerAffiliationSync() {
+        List<MultiUserChat> localChats = new ArrayList<>();
+
+        List<HostedRoom> allRooms = getAllHostedRoomsOnServer(); // will list all rooms where the user has some privileges
+
+        User me = UserManager.instance().getCurrentUser();
+
+        for (HostedRoom room : allRooms) {
+            MultiUserChat chat = getMUCManager().getMultiUserChat(room.getJid());
+
+            try {
+                chat.join(Resourcepart.from(me.getUserJIDProperties().getJID()));
+            } catch (SmackException.NoResponseException | XmppStringprepException |
+                    MultiUserChatException.NotAMucServiceException | InterruptedException |
+                    SmackException.NotConnectedException | XMPPException.XMPPErrorException e) {
+                e.printStackTrace();
+                continue; // this means that the user doesn't have permission to this room
+            }
+
+            try {
+                Thread.sleep(MyConnectionManager.CONNECTION_AND_PACKET_TIMEOUT);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            String roomJidAndUser = room.getJid() + "/" + me.getUserJIDProperties().getJID();
+            Occupant occupant = null;
+
+            try {
+                occupant = chat.getOccupant(JidCreate.entityFullFrom(roomJidAndUser));
+            } catch (XmppStringprepException e) {
+                e.printStackTrace();
+            }
+
+            if (occupant != null && occupant.getAffiliation() == MUCAffiliation.owner) {
+                localChats.add(chat);
+            }
+        }
+
+        return localChats;
+    }
+
+    public boolean roomExists(@Nullable EntityBareJid roomName) {
+        List<HostedRoom> allRooms = getAllHostedRoomsOnServer();
+
+        for (HostedRoom room : allRooms) {
+            if (room.getJid().equals(roomName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean createRoom(String roomName) throws RoomNameExistsException {
+        chats = null;
+
+        EntityBareJid roomNameAsEntityJid = convertRoomNameToFullRoomJid(roomName);
+
+        if (roomExists(roomNameAsEntityJid)) {
+            throw new RoomNameExistsException();
+        }
+
+        try {
+            MultiUserChat chat = getMUCManager().getMultiUserChat(roomNameAsEntityJid);
+            chat.create(Resourcepart.from(UserManager.instance().getCurrentUser().getUserJIDProperties().getJID()));
+
+            Form answerForm = chat.getConfigurationForm().createAnswerForm();
+
+            answerForm.setAnswer(FormField.FORM_TYPE, "http://jabber.org/protocol/muc#roomconfig");
+            answerForm.setAnswer("muc#roomconfig_publicroom", false);
+            answerForm.setAnswer("muc#roomconfig_persistentroom", true);
+            answerForm.setAnswer("muc#roomconfig_moderatedroom", false);
+            answerForm.setAnswer(MucConfigFormManager.MUC_ROOMCONFIG_PASSWORDPROTECTEDROOM, false);
+            answerForm.setAnswer(MucConfigFormManager.MUC_ROOMCONFIG_MEMBERSONLY, true);
+
+            chat.sendConfigurationForm(answerForm);
+        } catch (SmackException.NoResponseException | XmppStringprepException | MultiUserChatException.NotAMucServiceException | MultiUserChatException.MissingMucCreationAcknowledgeException | SmackException.NotConnectedException | MultiUserChatException.MucAlreadyJoinedException | InterruptedException | XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean addUsersToCreatedRoom(EntityBareJid room, List<User> usersList) {
+        List<EntityBareJid> users = new ArrayList<>();
+
+        for (User user : usersList) {
+            try {
+                users.add(JidCreate.entityBareFrom(user.getUserJIDProperties().getJID()));
+            } catch (XmppStringprepException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        return addJidsToCreatedRoom(room, users);
+    }
+
+    public boolean addUsersToCreatedRoom(String roomName, List<User> usersList) {
+        List<EntityBareJid> users = new ArrayList<>();
+
+        for (User user : usersList) {
+            try {
+                users.add(JidCreate.entityBareFrom(user.getUserJIDProperties().getJID()));
+            } catch (XmppStringprepException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+        return addJidsToCreatedRoom(convertRoomNameToFullRoomJid(roomName), users);
     }
 
     /**
-     * @param jidOfTheNewRoom should be a valid room name(akarmi@conference.localhost)
+     * @param room makie sure that room exists
      */
-    public MultiUserChat createInstantRoom(EntityBareJid jidOfTheNewRoom) {
-        return getMUCManager().getMultiUserChat(jidOfTheNewRoom);
+    public boolean addJidsToCreatedRoom(EntityBareJid room, List<EntityBareJid> users) {
+        try {
+            MultiUserChat muc = getMUCManager().getMultiUserChat(room);
+            if (!muc.isJoined()) {
+                muc.join(Resourcepart.from(getCurrentUserJidAsString()));
+            }
+            muc.grantOwnership(users);
+        } catch (SmackException.NoResponseException | XmppStringprepException | MultiUserChatException.NotAMucServiceException | InterruptedException | SmackException.NotConnectedException | XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    public EntityBareJid convertRoomNameToFullRoomJid(String roomName) {
+        try {
+            return JidCreate.entityBareFrom(roomName + "@" + SERVICE);
+        } catch (XmppStringprepException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private MultiUserChatManager getMUCManager() {
         return MyConnectionManager.instance().getMultiUserChatManager();
+    }
+
+    private String getCurrentUserJidAsString() {
+        return UserManager.instance().getCurrentUser().getUserJIDProperties().getJID();
+    }
+
+    private EntityBareJid getCurrentUserJid() {
+        try {
+            return JidCreate.entityBareFrom(UserManager.instance().getCurrentUser().getUserJIDProperties().getJID());
+        } catch (XmppStringprepException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+//    getters and setters
+
+    public MultiUserChat getMucByFullName(String roomName) {
+        for (MultiUserChat chat : chats) {
+            if (chat.getRoom().toString().equals(roomName)) {
+                return chat;
+            }
+        }
+
+        return null;
     }
 }

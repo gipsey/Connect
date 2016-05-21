@@ -21,17 +21,15 @@
             android:layout_height="wrap_content"/>
     </LinearLayout>
 
-    <RelativeLayout
-        android:id="@+id/login_baseView"
+    <ScrollView
+        android:id="@+id/register_scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
-            android:id="@+id/login_layout"
+            android:id="@+id/register_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_marginBottom="@dimen/spacingHuge"
             android:orientation="vertical">
 
             <android.support.design.widget.TextInputLayout
@@ -57,8 +55,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_password"
-                    android:imeActionId="@+id/login"
-                    android:imeActionLabel="@string/action_sign_in"
+                    android:imeActionId="@+id/register"
+                    android:imeActionLabel="@string/action_register"
+                    android:imeOptions="actionUnspecified"
+                    android:inputType="textPassword"
+                    android:maxLines="1"
+                    android:singleLine="true"/>
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/passwordAgain_editText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_passwordAgain"
+                    android:imeActionId="@+id/register"
+                    android:imeActionLabel="@string/action_register"
                     android:imeOptions="actionUnspecified"
                     android:inputType="textPassword"
                     android:maxLines="1"
@@ -66,22 +81,13 @@
             </android.support.design.widget.TextInputLayout>
 
             <Button
-                android:id="@+id/sign_in_button"
+                android:id="@+id/register_button"
                 style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacingNormal"
-                android:text="@string/action_sign_in"
+                android:layout_marginTop="@dimen/spacingLarge"
+                android:text="@string/action_register"
                 android:textStyle="bold"/>
         </LinearLayout>
-
-        <Button
-            android:id="@+id/to_registration_button"
-            style="?android:textAppearanceSmall"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:text="@string/action_to_registration"
-            android:textStyle="bold"/>
-    </RelativeLayout>
+    </ScrollView>
 </RelativeLayout>

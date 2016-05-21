@@ -30,7 +30,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:ellipsize="end"
-                    android:gravity="center"
+                    android:gravity="center_vertical"
                     android:paddingBottom="@dimen/spacingMicro"
                     android:paddingLeft="@dimen/spacingTiny"
                     android:paddingRight="@dimen/spacingTiny"

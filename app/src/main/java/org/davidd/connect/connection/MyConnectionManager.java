@@ -3,13 +3,13 @@ package org.davidd.connect.connection;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
 
 import org.davidd.connect.connection.event.OnAuthFailedEvent;
 import org.davidd.connect.connection.event.OnAuthSucceededEvent;
 import org.davidd.connect.connection.event.OnConnectionFailedEvent;
 import org.davidd.connect.connection.event.OnConnectionSucceededEvent;
 import org.davidd.connect.connection.event.OnDisconnectEvent;
+import org.davidd.connect.connection.event.OnRegistrationProcessFinishedEvent;
 import org.davidd.connect.connection.packetListener.AcceptAllStanzaFilter;
 import org.davidd.connect.connection.packetListener.AllIncomingPacketListener;
 import org.davidd.connect.connection.packetListener.AllOutgoingPacketListener;
@@ -17,6 +17,7 @@ import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.manager.RosterManager;
+import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.model.UserPresenceType;
 import org.davidd.connect.util.DataUtils;
@@ -39,26 +40,34 @@ import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
 import org.jivesoftware.smack.util.TLSUtils;
 import org.jivesoftware.smackx.caps.EntityCapsManager;
 import org.jivesoftware.smackx.disco.ServiceDiscoveryManager;
+import org.jivesoftware.smackx.iqregister.AccountManager;
 import org.jivesoftware.smackx.muc.MultiUserChatManager;
 import org.jivesoftware.smackx.pep.PEPManager;
 import org.jivesoftware.smackx.pubsub.PubSubManager;
+import org.jxmpp.jid.Jid;
 import org.jxmpp.jid.impl.JidCreate;
+import org.jxmpp.jid.parts.Localpart;
 import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyConnectionManager implements ConnectionListener {
 
     public static final int PORT = 5222;
     public static final int PORT_SSL = 5223;
-    public static final int CONNECTION_TIMEOUT = 8000; // in milliseconds
+    public static final int CONNECTION_AND_PACKET_TIMEOUT = 6000; // in milliseconds
 
     private static MyConnectionManager connectionManager;
     private XMPPTCPConnection xmppTcpConnection;
 
     private boolean ENABLE_DEBUG_MODE = true;
+
+    private boolean createConnectionForRegistration;
+    private User userToRegisterWith;
 
     private Roster roster;
     private ChatManager chatManager;
@@ -124,6 +133,9 @@ public class MyConnectionManager implements ConnectionListener {
             EventBus.getDefault().post(new OnConnectionFailedEvent(new ErrorMessage("Password is null or empty.")));
         }
 
+        userToRegisterWith = null;
+        createConnectionForRegistration = false;
+
         // Tear down the connection if exists, because we allow only one connection at the same time
         if (xmppTcpConnection != null) {
             L.d(new Object() {}, "Disconnection started");
@@ -138,10 +150,16 @@ public class MyConnectionManager implements ConnectionListener {
         }
     }
 
+    public void register(User user) {
+        userToRegisterWith = user;
+        createConnectionForRegistration = true;
+        createConnection(user.getUserJIDProperties(), user.getPassword());
+    }
+
     /**
      * Invoke this only if the connection is already made and it's non anonymous.
      */
-    void login() {
+    private void login() {
         new AsyncTask<Void, Void, Throwable>() {
             @Override
             protected Throwable doInBackground(Void... params) {
@@ -167,15 +185,14 @@ public class MyConnectionManager implements ConnectionListener {
      * Call this only from {@link MyConnectionManager#connect(UserJIDProperties, String)}
      * after checking the parameters.
      */
-    @VisibleForTesting
-    void createConnection(final UserJIDProperties JIDProperties, final String password) {
+    private void createConnection(final UserJIDProperties JIDProperties, final String password) {
         L.d(new Object() {}, "JID: " + JIDProperties.getJID() + ", password: " + password);
 
         new AsyncTask<Void, Void, Throwable>() {
             @Override
             protected Throwable doInBackground(Void... params) {
                 try {
-                    xmppTcpConnection = createConnectionInstance(JIDProperties, password, MyConnectionManager.this);
+                    xmppTcpConnection = createConnectionInstance(JIDProperties, password);
                     xmppTcpConnection.connect();
                 } catch (SmackException | XMPPException | IOException | InterruptedException e) {
                     e.printStackTrace();
@@ -187,44 +204,50 @@ public class MyConnectionManager implements ConnectionListener {
             @Override
             protected void onPostExecute(Throwable throwable) {
                 if (throwable != null) {
-                    if (throwable instanceof SmackException.AlreadyConnectedException) {
-                        connected(xmppTcpConnection);
+                    if (createConnectionForRegistration) {
+                        EventBus.getDefault().post(new OnRegistrationProcessFinishedEvent(throwable));
                     } else {
-                        EventBus.getDefault().post(new OnConnectionFailedEvent(new ErrorMessage(
-                                "Connection failed to " + xmppTcpConnection.getServiceName() + ", " + xmppTcpConnection.getHost())));
+                        if (throwable instanceof SmackException.AlreadyConnectedException) {
+                            connected(xmppTcpConnection);
+                        } else {
+                            EventBus.getDefault().post(new OnConnectionFailedEvent(new ErrorMessage(
+                                    "Connection failed to " + xmppTcpConnection.getServiceName() + ", " + xmppTcpConnection.getHost())));
+                        }
                     }
                 }
             }
         }.execute();
     }
 
-    @VisibleForTesting
-    XMPPTCPConnection createConnectionInstance(final UserJIDProperties JIDProperties, final String password, ConnectionListener listener) throws XmppStringprepException {
+    private XMPPTCPConnection createConnectionInstance(final UserJIDProperties JIDProperties, final String password) throws XmppStringprepException {
         // Create the connection object
         XMPPTCPConnectionConfiguration.Builder builder = initializeConnection();
 
         builder.setUsernameAndPassword(JIDProperties.getName(), password);
-        builder.setServiceName(JidCreate.from(JIDProperties.getDomain()).asDomainBareJid());
+        builder.setXmppDomain(JidCreate.from(JIDProperties.getDomain()).asDomainBareJid());
         builder.setHost(JIDProperties.getDomain());
         builder.setSendPresence(false);
 
         XMPPTCPConnection xmppTcpConnection = new XMPPTCPConnection(builder.build());
-        xmppTcpConnection.addConnectionListener(listener);
+        xmppTcpConnection.setPacketReplyTimeout(CONNECTION_AND_PACKET_TIMEOUT);
+        xmppTcpConnection.addConnectionListener(MyConnectionManager.this);
 
-        ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(xmppTcpConnection);
-        reconnectionManager.enableAutomaticReconnection();
+        if (!createConnectionForRegistration) {
+            ReconnectionManager reconnectionManager = ReconnectionManager.getInstanceFor(xmppTcpConnection);
+            reconnectionManager.enableAutomaticReconnection();
 
-        ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(xmppTcpConnection);
-        sdm.addFeature("http://jabber.org/protocol/geoloc");
-        sdm.addFeature("http://jabber.org/protocol/geoloc+notify");
+            ServiceDiscoveryManager sdm = ServiceDiscoveryManager.getInstanceFor(xmppTcpConnection);
+            sdm.addFeature("http://jabber.org/protocol/geoloc");
+            sdm.addFeature("http://jabber.org/protocol/geoloc+notify");
 
-        EntityCapsManager capsManager = EntityCapsManager.getInstanceFor(xmppTcpConnection);
-        capsManager.enableEntityCaps();
+            EntityCapsManager capsManager = EntityCapsManager.getInstanceFor(xmppTcpConnection);
+            capsManager.enableEntityCaps();
 
-        ProviderManager.addExtensionProvider("event", "http://jabber.org/protocol/pubsub#event", new GeolocationExtensionProvider());
+            ProviderManager.addExtensionProvider("event", "http://jabber.org/protocol/pubsub#event", new GeolocationExtensionProvider());
 
-        pepManager = PEPManager.getInstanceFor(xmppTcpConnection);
-        pepManager.addPEPListener(AllPepEventListener.getInstance());
+            pepManager = PEPManager.getInstanceFor(xmppTcpConnection);
+            pepManager.addPEPListener(AllPepEventListener.getInstance());
+        }
 
         return xmppTcpConnection;
     }
@@ -233,10 +256,10 @@ public class MyConnectionManager implements ConnectionListener {
         XMPPTCPConnection.setUseStreamManagementDefault(true);
 
         XMPPTCPConnectionConfiguration.Builder builder = XMPPTCPConnectionConfiguration.builder();
-        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.ifpossible);
+        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
         builder.setPort(PORT);
-        builder.setConnectTimeout(CONNECTION_TIMEOUT);
-        builder.setCompressionEnabled(false);
+        builder.setConnectTimeout(CONNECTION_AND_PACKET_TIMEOUT);
+        builder.setCompressionEnabled(true);
 
         if (ENABLE_DEBUG_MODE) {
             builder.setDebuggerEnabled(true);
@@ -292,10 +315,39 @@ public class MyConnectionManager implements ConnectionListener {
     public void connected(XMPPConnection connection) {
         L.d(new Object() {});
 
-        initializeManagersOnConnectionSuccess();
-        EventBus.getDefault().post(new OnConnectionSucceededEvent());
+        if (createConnectionForRegistration) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Jid jid = JidCreate.entityBareFrom(userToRegisterWith.getUserJIDProperties().getJID());
+                        Localpart userName = jid.getLocalpartOrNull();
 
-        login();
+                        Map<String, String> map = new HashMap<>();
+                        map.put("username", userName.toString());
+                        map.put("name", userName.toString());
+                        map.put("password", userToRegisterWith.getPassword());
+                        map.put("email", "asd@asd.asd");
+                        map.put("creationDate", "" + System.currentTimeMillis() / 1000L);
+
+                        AccountManager accountManager = AccountManager.getInstance(xmppTcpConnection);
+                        accountManager.sensitiveOperationOverInsecureConnection(true);
+                        accountManager.createAccount(userName, userToRegisterWith.getPassword(), map);
+
+                        EventBus.getDefault().post(new OnRegistrationProcessFinishedEvent(null));
+                    } catch (XMPPException.XMPPErrorException | SmackException.NotConnectedException | SmackException.NoResponseException | InterruptedException | XmppStringprepException e) {
+                        e.printStackTrace();
+
+                        EventBus.getDefault().post(new OnRegistrationProcessFinishedEvent(e));
+                    }
+                }
+            }).start();
+        } else {
+            initializeManagersOnConnectionSuccess();
+            EventBus.getDefault().post(new OnConnectionSucceededEvent());
+
+            login();
+        }
     }
 
     @Override
@@ -398,11 +450,6 @@ public class MyConnectionManager implements ConnectionListener {
      */
     public XMPPTCPConnection getXmppTcpConnection() {
         return xmppTcpConnection;
-    }
-
-    @VisibleForTesting
-    void setXmppTcpConnection(XMPPTCPConnection xmppTcpConnection) {
-        this.xmppTcpConnection = xmppTcpConnection;
     }
 
     public boolean isConnected() {

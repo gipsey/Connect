@@ -19,11 +19,11 @@ import butterknife.ButterKnife;
 public class ControlFragment extends Fragment {
 
     public static final String TAG = ControlFragment.class.getName();
-
     public static final int VIEW_PAGER_DEFAULT_PAGE_POSITION = 1;
 
     @Bind(R.id.control_activity_sliding_tabs)
     protected TabLayout mainTabLayout;
+
     @Bind(R.id.control_activity_view_pager)
     protected ViewPager mainViewPager;
 

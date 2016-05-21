@@ -91,4 +91,8 @@ public class DisplayUtils {
     public static boolean isEmailValid(String email) {
         return !DataUtils.isEmpty(email) && email.matches(JID_EXPRESSION);
     }
+
+    public static boolean doPasswordsMatch(String password, String passwordAgain) {
+        return password != null && password.equals(passwordAgain);
+    }
 }

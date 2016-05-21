@@ -1,25 +1,33 @@
 package org.davidd.connect.component.fragment;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.davidd.connect.R;
+import org.davidd.connect.component.activity.NavigateToAddOccupantsListener;
 import org.davidd.connect.component.adapter.RoomsArrayAdapter;
 import org.davidd.connect.component.event.RoomsUpdatedEvent;
+import org.davidd.connect.component.exception.RoomNameExistsException;
 import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.model.Room;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smackx.muc.HostedRoom;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +44,14 @@ public class ControlRoomsFragment extends ControlTabFragment {
     FloatingActionButton addRoomFloatingActionButton;
 
     private RoomsArrayAdapter roomsArrayAdapter;
+
+    private NavigateToAddOccupantsListener navigateToAddOccupantsListener;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        navigateToAddOccupantsListener = (NavigateToAddOccupantsListener) context;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,20 +74,25 @@ public class ControlRoomsFragment extends ControlTabFragment {
         emptyView.setText(R.string.no_rooms);
         roomsListView.setEmptyView(emptyView);
 
-        roomsArrayAdapter = new RoomsArrayAdapter(getActivity());
+        roomsArrayAdapter = new RoomsArrayAdapter(getActivity(), new RoomsArrayAdapter.AddOccupantsListener() {
+            @Override
+            public void addOccupants(Room room) {
+                navigateToAddOccupantsListener.navigateToAddOccupants(room);
+            }
+        });
 
         roomsListView.setAdapter(roomsArrayAdapter);
         roomsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+                navigateToChatListener.navigateToChat(roomsArrayAdapter.getItem(position));
             }
         });
 
         addRoomFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(), "Hi", Toast.LENGTH_SHORT).show();
+                showNewRoomAlert();
             }
         });
     }
@@ -86,14 +107,7 @@ public class ControlRoomsFragment extends ControlTabFragment {
     public void onResume() {
         super.onResume();
 
-        List<HostedRoom> hostedRooms = MyMultiUserChatManager.instance().getAllHostedRoomsOnServer();
-        List<Room> rooms = new ArrayList<>();
-
-        for (HostedRoom hostedRoom : hostedRooms) {
-            rooms.add(new Room(hostedRoom.getJid().toString() + " " + hostedRoom.getName()));
-        }
-
-        roomsUpdated(rooms);
+        startLoadingData();
     }
 
     @Override
@@ -106,15 +120,79 @@ public class ControlRoomsFragment extends ControlTabFragment {
     public void onPagesSelected() {
     }
 
-    // TODO maybe no need for events
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void roomsUpdated(RoomsUpdatedEvent roomsUpdatedEvent) {
         roomsUpdated(roomsUpdatedEvent.getRooms());
+        endLoadingData();
     }
 
-    private void roomsUpdated(List<Room> roomList) {
+    private void startLoadingData() {
+        ((TextView) roomsListView.getEmptyView()).setText(getResources().getString(R.string.rooms_loading));
+
         roomsArrayAdapter.clear();
+        roomsArrayAdapter.notifyDataSetChanged();
+
+        MyMultiUserChatManager.instance().getUserRoomWithOwnerAffiliationAsync();
+    }
+
+    private void endLoadingData() {
+        ((TextView) roomsListView.getEmptyView()).setText(getString(R.string.no_rooms));
+    }
+
+
+    private void roomsUpdated(List<MultiUserChat> chats) {
+        roomsArrayAdapter.clear();
+
+        List<Room> roomList = new ArrayList<>();
+        for (MultiUserChat multiUserChat : chats) {
+            roomList.add(new Room(multiUserChat));
+        }
+
         roomsArrayAdapter.addAll(roomList);
         roomsArrayAdapter.notifyDataSetChanged();
+    }
+
+    private void showNewRoomAlert() {
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        editText.setHint("Enter room name");
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        editText.setLayoutParams(layoutParams);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setCancelable(true);
+        builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                roomCreationAttempt(editText.getText().toString());
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+
+        builder.setView(editText);
+
+        builder.create().show();
+    }
+
+    private void roomCreationAttempt(String roomName) {
+        try {
+            boolean success = false;
+
+            if (!TextUtils.isEmpty(roomName)) {
+                success = MyMultiUserChatManager.instance().createRoom(roomName);
+            }
+
+            if (success) {
+                Toast.makeText(getActivity(), "Room '" + roomName + "' successfully created", Toast.LENGTH_LONG).show();
+                startLoadingData();
+            } else {
+                Toast.makeText(getActivity(), "Room '" + roomName + "' creation failed", Toast.LENGTH_LONG).show();
+            }
+        } catch (RoomNameExistsException e) {
+            e.printStackTrace();
+            Toast.makeText(getActivity(), "Room '" + roomName + "' already exists, try another", Toast.LENGTH_LONG).show();
+        }
     }
 }

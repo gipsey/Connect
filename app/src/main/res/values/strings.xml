@@ -18,10 +18,14 @@
     <string name="successfully_connected">Successfully connected to %s</string>
     <string name="prompt_jid">JID (Jabber identifier)</string>
     <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in</string>
-    <string name="error_invalid_jid">This JID is invalid</string>
-    <string name="error_invalid_password">This password is invalid</string>
-    <string name="error_field_required">This field is required</string>
+    <string name="prompt_passwordAgain">Password again</string>
+    <string name="action_sign_in">Sign In</string>
+    <string name="action_to_registration">To Registration</string>
+    <string name="action_register">Register</string>
+    <string name="error_invalid_jid">The JID is invalid</string>
+    <string name="error_invalid_password">The password is invalid</string>
+    <string name="error_passwords_do_not_match">Passwords don\'t match</string>
+    <string name="error_field_required">The field is required</string>
     <string name="permission_rationale">Contacts permissions are needed for providing username
         completions.
     </string>
@@ -48,6 +52,7 @@
     <string name="no_active_chats">There are no active chats, so start one…</string>
     <string name="no_contacts">There are no contacts to show…</string>
     <string name="no_rooms">There are no rooms to show…</string>
+    <string name="rooms_loading">Rooms list is loading…</string>
 
     <!-- drawer -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -59,7 +64,7 @@
     <string name="drawer_contacts">Contacts</string>
     <string name="drawer_others">Others</string>
     <string name="drawer_about">About</string>
-    <string name="drawer_debug_geoloc">Debug geolocation</string>
+    <string name="drawer_debug">Debug</string>
     <string name="drawer_debug_map">Debug map</string>
 
     <string name="title_activity_maps">Map</string>
