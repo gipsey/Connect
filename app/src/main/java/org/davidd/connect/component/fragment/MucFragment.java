@@ -24,11 +24,15 @@ import android.widget.TextView;
 import org.davidd.connect.R;
 import org.davidd.connect.component.activity.ChatActivity;
 import org.davidd.connect.component.adapter.ChatAdapter;
+import org.davidd.connect.component.event.MucMessageEvent;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.util.DataUtils;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jxmpp.jid.EntityFullJid;
@@ -40,8 +44,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
 
-public class MucFragment extends Fragment implements
-        MyChatManager.MessageReceivedListener {
+public class MucFragment extends Fragment {
 
     public static final String TAG = MucFragment.class.getName();
 
@@ -66,7 +69,6 @@ public class MucFragment extends Fragment implements
     protected ImageButton sendButton;
 
     private ChatAdapter chatAdapter;
-
     private MultiUserChat muc;
 
     @Override
@@ -151,6 +153,7 @@ public class MucFragment extends Fragment implements
     @Override
     public void onStart() {
         super.onStart();
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -160,6 +163,7 @@ public class MucFragment extends Fragment implements
 
     @Override
     public void onStop() {
+        EventBus.getDefault().unregister(this);
         super.onStop();
     }
 
@@ -177,38 +181,34 @@ public class MucFragment extends Fragment implements
         sendMessage();
     }
 
-    private void sendMessage() {
-//        String message = messageEditText.getText().toString().trim();
-//        messageEditText.setText(null);
-//
-//        if (DataUtils.isEmpty(message)) {
-//            return;
-//        }
-//
-//        // send it
-//        MyMessage myMessage = MyChatManager.instance().sendMessage(userToChatWith, message);
-//
-//        if (myMessage != null) {
-//            // show locally
-//            chatAdapter.add(myMessage);
-//            chatAdapter.notifyDataSetChanged();
-//        }
-    }
-
-    @Override
-    public void messageReceived(MyMessage myMessage) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void messageReceived(MucMessageEvent mucMessageEvent) {
         L.d(new Object() {});
-        if (!isMessageValid(myMessage.getMessage())) {
+        if (!isMessageValid(mucMessageEvent.getMyMessage().getMessage())) {
             L.d(new Object() {}, "Message is empty");
             return;
         }
 
-        chatAdapter.add(myMessage);
+        chatAdapter.add(mucMessageEvent.getMyMessage());
         chatAdapter.notifyDataSetChanged();
     }
 
+    private void sendMessage() {
+        String message = messageEditText.getText().toString().trim();
+        messageEditText.setText(null);
+
+        if (DataUtils.isEmpty(message)) {
+            return;
+        }
+
+        // send it
+        MyMessage myMessage = MyChatManager.instance().sendMessage(muc, message);
+
+        // no need to add to the adapter because will be received as a message
+    }
+
     private boolean isMessageValid(Message message) {
-        return (message.getType() == Message.Type.chat || message.getType() == Message.Type.normal)
+        return (message.getType() == Message.Type.groupchat)
                 && !DataUtils.isEmpty(message.getBody());
     }
 }

@@ -13,13 +13,13 @@ import org.davidd.connect.R;
 import org.davidd.connect.component.adapter.ActiveChatsAdapter;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.UserPresenceChangedMessage;
-import org.davidd.connect.model.ActiveChat;
+import org.davidd.connect.model.ActiveBaseChat;
+import org.davidd.connect.model.ActiveUserChat;
 import org.davidd.connect.model.User;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.Bind;
@@ -55,14 +55,15 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
 
         listView.setEmptyView(emptyView);
 
-        chatsAdapter = new ActiveChatsAdapter(getActivity(), R.layout.contact_row, new ArrayList<ActiveChat>());
+        chatsAdapter = new ActiveChatsAdapter(getActivity(), R.layout.contact_row);
 
         listView.setAdapter(chatsAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                navigateToChatListener.navigateToChat(chatsAdapter.getItem(position).getUserToChatWith());
+                // TODO
+//                navigateToChatListener.navigateToChat(chatsAdapter.getItem(position).getUserToChatWith());
             }
         });
     }
@@ -76,7 +77,7 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
     @Override
     public void onResume() {
         super.onResume();
-        updateActiveChats(MyChatManager.instance().getActiveChats());
+        updateActiveChats(MyChatManager.instance().getActiveBaseChats());
     }
 
     @Override
@@ -88,11 +89,11 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void userPresenceChanged(UserPresenceChangedMessage message) {
-        for (ActiveChat activeChat : chatsAdapter.getActiveChats()) {
-            User partner = activeChat.getUserToChatWith();
+        for (ActiveUserChat activeUserChat : chatsAdapter.getActiveUserChats()) {
+            User partner = activeUserChat.getUserToChatWith();
             if (partner.equals(message.getUser())) {
                 partner.setUserPresence(message.getUser().getUserPresence());
-                activeChat.setUserToChatWith(partner);
+                activeUserChat.setUserToChatWith(partner);
                 chatsAdapter.notifyDataSetChanged();
                 return;
             }
@@ -104,13 +105,13 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
     }
 
     @Override
-    public void chatsUpdated(List<ActiveChat> activeChats) {
-        updateActiveChats(activeChats);
+    public void chatsUpdated(List<ActiveBaseChat> activeBaseChats) {
+        updateActiveChats(activeBaseChats);
     }
 
-    private void updateActiveChats(List<ActiveChat> activeChats) {
+    private void updateActiveChats(List<ActiveBaseChat> activeBaseChats) {
         chatsAdapter.clear();
-        chatsAdapter.addAll(activeChats);
+        chatsAdapter.addAll(activeBaseChats);
         chatsAdapter.notifyDataSetChanged();
     }
 }

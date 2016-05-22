@@ -8,6 +8,7 @@ import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.model.User;
 import org.greenrobot.eventbus.EventBus;
+import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
@@ -126,6 +127,16 @@ public class MyMultiUserChatManager implements InvitationListener {
                 @Override
                 public void run() {
                     chats = getUserRoomWithOwnerAffiliationSync();
+
+                    for (final MultiUserChat chat : chats) {
+                        chat.addMessageListener(new MessageListener() {
+                            @Override
+                            public void processMessage(Message message) {
+                                MyChatManager.instance().processMessage(chat, message);
+                            }
+                        });
+                    }
+
                     EventBus.getDefault().post(new RoomsUpdatedEvent(chats));
                 }
             }).start();

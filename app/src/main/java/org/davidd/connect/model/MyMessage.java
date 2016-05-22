@@ -1,20 +1,21 @@
 package org.davidd.connect.model;
 
 import org.jivesoftware.smack.packet.Message;
+import org.jxmpp.jid.EntityBareJid;
 
 import java.util.Date;
 
 public class MyMessage {
 
     private User sender;
-    private User receiver;
+    private EntityBareJid entityToChatWith; // can be a group or a user
     private Date date;
 
     private Message message;
 
-    public MyMessage(User sender, User receiver, Date date, Message message) {
+    public MyMessage(User sender, EntityBareJid entityToChatWith, Date date, Message message) {
         this.sender = sender;
-        this.receiver = receiver;
+        this.entityToChatWith = entityToChatWith;
         this.date = date;
         this.message = message;
     }
@@ -27,12 +28,12 @@ public class MyMessage {
         this.sender = sender;
     }
 
-    public User getReceiver() {
-        return receiver;
+    public EntityBareJid getEntityToChatWith() {
+        return entityToChatWith;
     }
 
-    public void setReceiver(User receiver) {
-        this.receiver = receiver;
+    public void setEntityToChatWith(EntityBareJid entityToChatWith) {
+        this.entityToChatWith = entityToChatWith;
     }
 
     public Date getDate() {
