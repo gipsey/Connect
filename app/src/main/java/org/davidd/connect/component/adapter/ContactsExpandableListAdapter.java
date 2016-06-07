@@ -14,6 +14,7 @@ import org.davidd.connect.R;
 import org.davidd.connect.component.activity.MapsActivity;
 import org.davidd.connect.component.activity.UserActivity;
 import org.davidd.connect.manager.LocationEventManager;
+import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
@@ -108,27 +109,7 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
         }
 
         final User user = contactGroups.get(groupPosition).getUsers().get(childPosition);
-        setupContact(viewHolder, user);
-
-        if (viewHolder.userLocationImageButton.getVisibility() == View.VISIBLE) {
-            viewHolder.userLocationImageButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Bundle bundle = new Bundle();
-                    bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
-                    ActivityUtils.navigate(activity, MapsActivity.class, bundle, false);
-                }
-            });
-        }
-
-        viewHolder.userProfileImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Bundle bundle = new Bundle();
-                bundle.putString(UserActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
-                ActivityUtils.navigate(activity, UserActivity.class, bundle, false);
-            }
-        });
+        setupContact(viewHolder, (ContactGroup) getGroup(groupPosition), user);
 
         return convertView;
     }
@@ -142,28 +123,79 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
         return contactGroups.get(groupPosition).getUsers().get(childPosition);
     }
 
-    private void setupContact(ContactViewHolder viewHolder, User user) {
+    private void setupContact(ContactViewHolder viewHolder, ContactGroup group, final User user) {
         viewHolder.firstLetterTextView.setText(String.valueOf(user.getUserJIDProperties().getJID().charAt(0)));
         viewHolder.userNameTextView.setText(user.getUserJIDProperties().getNameAndDomain());
 
-        String status = user.getUserPresence().getPresence().getStatus();
-        if (DataUtils.isEmpty(status)) {
+        if (group.isWaitingForApproval()) {
             viewHolder.statusTextView.setVisibility(View.GONE);
-            viewHolder.statusTextView.setText(null);
-        } else {
-            viewHolder.statusTextView.setVisibility(View.VISIBLE);
-            viewHolder.statusTextView.setText(status);
-        }
-
-        if (LocationEventManager.instance().getGeolocationItemsForUser(user) == null) {
             viewHolder.userLocationImageButton.setVisibility(View.GONE);
-        } else {
-            viewHolder.userLocationImageButton.setVisibility(View.VISIBLE);
-        }
+            viewHolder.userProfileImageButton.setVisibility(View.GONE);
+            viewHolder.availabilityImageView.setVisibility(View.GONE);
+            viewHolder.rightBottomTextView.setVisibility(View.GONE);
 
-        viewHolder.rightBottomTextView.setText(user.getUserPresence().getUserPresenceType().getStatus());
-        viewHolder.availabilityImageView.setImageResource(
-                ContactsHelper.getImageResourceFromUserPresence(user.getUserPresence().getUserPresenceType()));
+            viewHolder.addUserImageButton.setVisibility(View.VISIBLE);
+            viewHolder.addUserImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    RosterManager.instance().acceptUserSubscription(user);
+                }
+            });
+
+            viewHolder.removeUserImageButton.setVisibility(View.VISIBLE);
+            viewHolder.removeUserImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    RosterManager.instance().declineUserSubscription(user);
+                }
+            });
+        } else {
+            String status = user.getUserPresence().getPresence().getStatus();
+            if (DataUtils.isEmpty(status)) {
+                viewHolder.statusTextView.setVisibility(View.GONE);
+                viewHolder.statusTextView.setText(null);
+            } else {
+                viewHolder.statusTextView.setVisibility(View.VISIBLE);
+                viewHolder.statusTextView.setText(status);
+            }
+
+            if (LocationEventManager.instance().getGeolocationItemsForUser(user) == null) {
+                viewHolder.userLocationImageButton.setVisibility(View.GONE);
+            } else {
+                viewHolder.userLocationImageButton.setVisibility(View.VISIBLE);
+            }
+
+            viewHolder.rightBottomTextView.setVisibility(View.VISIBLE);
+            viewHolder.rightBottomTextView.setText(user.getUserPresence().getUserPresenceType().getStatus());
+
+            viewHolder.availabilityImageView.setVisibility(View.VISIBLE);
+            viewHolder.availabilityImageView.setImageResource(
+                    ContactsHelper.getImageResourceFromUserPresence(user.getUserPresence().getUserPresenceType()));
+
+            if (viewHolder.userLocationImageButton.getVisibility() == View.VISIBLE) {
+                viewHolder.userLocationImageButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Bundle bundle = new Bundle();
+                        bundle.putString(MapsActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
+                        ActivityUtils.navigate(activity, MapsActivity.class, bundle, false);
+                    }
+                });
+            }
+
+            viewHolder.userProfileImageButton.setVisibility(View.VISIBLE);
+            viewHolder.userProfileImageButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString(UserActivity.USER_BUNDLE_TAG, createGsonWithExcludedFields().toJson(user));
+                    ActivityUtils.navigate(activity, UserActivity.class, bundle, false);
+                }
+            });
+
+            viewHolder.addUserImageButton.setVisibility(View.GONE);
+            viewHolder.removeUserImageButton.setVisibility(View.GONE);
+        }
     }
 
     class GroupViewHolder {

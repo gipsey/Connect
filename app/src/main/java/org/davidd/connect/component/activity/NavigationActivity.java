@@ -9,7 +9,6 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,12 +29,12 @@ import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import org.davidd.connect.R;
-import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
+import org.greenrobot.eventbus.EventBus;
 
-public abstract class NavigationActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public abstract class NavigationActivity extends BaseAppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final int REQUEST_CHECK_SETTINGS = 1;
 
@@ -62,6 +61,7 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
     @Override
     protected void onStart() {
         super.onStart();
+        EventBus.getDefault().register(this);
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.drawer_navigation_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -81,6 +81,12 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
         userNameTextView.setText(UserManager.instance().getCurrentUser().getUserJIDProperties().getJID());
 
         checkIfLocationSettingsAreSet();
+    }
+
+    @Override
+    protected void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 
     @Override
@@ -120,15 +126,15 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
             case R.id.drawer_contacts:
                 navigateToControlActivity(1);
                 break;
+            case R.id.drawer_rooms:
+                navigateToControlActivity(2);
+                break;
+            case R.id.drawer_logout:
+                logOut();
+                break;
+            case R.id.drawer_settings:
+                break;
             case R.id.drawer_about:
-                L.d(new Object() {}, "drawer_about");
-                break;
-            case R.id.drawer_debug_geoloc:
-
-                break;
-            case R.id.drawer_debug_map:
-                navigateToMapsActivity();
-                break;
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -151,10 +157,6 @@ public abstract class NavigationActivity extends AppCompatActivity implements Na
             bundle.putInt(ControlActivity.CONTROL_FRAGMENT_ITEM_BUNDLE_KEY, fragmentIndexToShow);
             ActivityUtils.navigate(this, ControlActivity.class, bundle, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
         }
-    }
-
-    private void navigateToMapsActivity() {
-        ActivityUtils.navigate(this, MapsActivity.class, null, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
     }
 
     private void checkIfLocationSettingsAreSet() {

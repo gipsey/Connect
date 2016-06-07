@@ -45,7 +45,7 @@ import butterknife.OnEditorAction;
 
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
-public class UserActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class UserActivity extends BaseAppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     public static final String USER_BUNDLE_TAG = "UserBundleTag";
 
@@ -191,19 +191,7 @@ public class UserActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @OnClick(R.id.frameLayout_logOut_button)
     void onLogOut(View view) {
-        MyConnectionManager.instance().disconnectAsync();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDisconnect(OnDisconnectEvent event) {
-        String userName = user.getUserJIDProperties().getName();
-        UserManager.instance().logOut();
-
-        Intent intent = new Intent(this, ConnectionService.class);
-        stopService(intent);
-
-        Toast.makeText(this, "Bye " + userName + "!", Toast.LENGTH_SHORT).show();
-        ActivityUtils.navigate(this, SplashActivity.class, true);
+        logOut();
     }
 
     private void sendPresence(UserPresenceType item, Editable text) {

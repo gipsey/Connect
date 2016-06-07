@@ -36,6 +36,12 @@ class ContactViewHolder {
     @Bind(R.id.user_profile_imageButton)
     ImageButton userProfileImageButton;
 
+    @Bind(R.id.add_user_imageButton)
+    ImageButton addUserImageButton;
+
+    @Bind(R.id.remove_user_imageButton)
+    ImageButton removeUserImageButton;
+
     ContactViewHolder(View view) {
         ButterKnife.bind(this, view);
     }

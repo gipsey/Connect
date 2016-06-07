@@ -59,7 +59,7 @@ public class LocationEventManager {
 
         savedLocations.put(publisher, item);
 
-        EventBus.getDefault().post(new SavedUserLocationsChangedEvent());
+        EventBus.getDefault().post(new SavedUserLocationsChangedEvent(publisher));
     }
 
     /**
@@ -70,7 +70,7 @@ public class LocationEventManager {
 
         savedLocations.put(UserManager.instance().getCurrentUser(), item);
 
-        EventBus.getDefault().post(new SavedUserLocationsChangedEvent());
+        EventBus.getDefault().post(new SavedUserLocationsChangedEvent(UserManager.instance().getCurrentUser()));
 
         createGeolocationNodeIfDoesNotExist();
 

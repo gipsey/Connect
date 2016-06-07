@@ -187,6 +187,10 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         try {
             participantJid = JidCreate.entityBareFrom(participant.getUserJIDProperties().getNameAndDomain());
             me = JidCreate.entityBareFrom(UserManager.instance().getCurrentUser().getUserJIDProperties().getNameAndDomain());
+            // TODO
+//            java.lang.NullPointerException
+//            at org.davidd.connect.manager.MyChatManager.processMessage(MyChatManager.java:189)
+//            at org.jivesoftware.smack.chat.Chat.deliver(Chat.java:183)
         } catch (XmppStringprepException e) {
             e.printStackTrace();
         }

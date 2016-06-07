@@ -15,7 +15,6 @@ import org.davidd.connect.connection.packetListener.AllIncomingPacketListener;
 import org.davidd.connect.connection.packetListener.AllOutgoingPacketListener;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
-import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
@@ -32,7 +31,9 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat.ChatManager;
+import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
@@ -392,8 +393,15 @@ public class MyConnectionManager implements ConnectionListener {
 
         // set up roster
         roster = Roster.getInstanceFor(MyConnectionManager.instance().getXmppTcpConnection());
-        roster.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
+        roster.setSubscriptionMode(Roster.SubscriptionMode.manual);
         roster.addRosterListener(RosterManager.instance());
+
+        xmppTcpConnection.addAsyncStanzaListener(RosterManager.instance(), new StanzaFilter() {
+            @Override
+            public boolean accept(Stanza stanza) {
+                return stanza instanceof Presence;
+            }
+        });
 
         // set up chat manager
         chatManager = ChatManager.getInstanceFor(xmppTcpConnection);
@@ -418,7 +426,6 @@ public class MyConnectionManager implements ConnectionListener {
         }
 
         if (multiUserChatManager != null) {
-            multiUserChatManager.removeInvitationListener(MyMultiUserChatManager.instance());
             multiUserChatManager = null;
         }
 
@@ -437,7 +444,6 @@ public class MyConnectionManager implements ConnectionListener {
 
         // set up multi user chat manager
         multiUserChatManager = MultiUserChatManager.getInstanceFor(xmppTcpConnection);
-        multiUserChatManager.addInvitationListener(MyMultiUserChatManager.instance());
 
         if (ENABLE_DEBUG_MODE) {
             triggerServerServiceDiscoveryInformation(xmppTcpConnection);
@@ -456,9 +462,9 @@ public class MyConnectionManager implements ConnectionListener {
         return getXmppTcpConnection() != null && getXmppTcpConnection().isConnected();
     }
 
-
     public Roster getRoster() {
-        return roster;
+                return roster;
+//        return Roster.getInstanceFor(xmppTcpConnection);
     }
 
     public ChatManager getChatManager() {

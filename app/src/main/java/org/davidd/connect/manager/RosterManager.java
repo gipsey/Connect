@@ -1,6 +1,5 @@
 package org.davidd.connect.manager;
 
-import org.davidd.connect.ConnectApp;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.model.User;
@@ -8,7 +7,11 @@ import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.model.UserPresence;
 import org.davidd.connect.model.UserPresenceType;
 import org.greenrobot.eventbus.EventBus;
+import org.jivesoftware.smack.SmackException;
+import org.jivesoftware.smack.StanzaListener;
+import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
@@ -18,8 +21,6 @@ import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -27,12 +28,9 @@ import java.util.Set;
  * @author David Debre
  *         on 2015/12/20
  */
-public class RosterManager implements RosterListener {
+public class RosterManager implements RosterListener, StanzaListener {
 
     private static RosterManager rosterManager;
-
-    private List<User> userContacts = new ArrayList<>();
-    private Set<UserContactsUpdatedListener> userContactsUpdatedListeners = new HashSet<>();
 
     private RosterManager() {
     }
@@ -45,24 +43,42 @@ public class RosterManager implements RosterListener {
     }
 
     @Override
+    public void processPacket(Stanza packet) throws SmackException.NotConnectedException, InterruptedException {
+        if (!(packet instanceof Presence)) {
+            return;
+        }
+
+        Presence presence = (Presence) packet;
+        if (presence.getType() == Presence.Type.subscribe) {
+
+
+
+
+
+
+            EventBus.getDefault().post(new RefreshRoster());
+        }
+    }
+
+    @Override
     public void entriesAdded(Collection<Jid> addresses) {
         L.d(new Object() {}, addresses.toString());
 
-        contactsWereUpdated();
+        EventBus.getDefault().post(new RefreshRoster());
     }
 
     @Override
     public void entriesUpdated(Collection<Jid> addresses) {
         L.d(new Object() {}, addresses.toString());
 
-        contactsWereUpdated();
+        EventBus.getDefault().post(new RefreshRoster());
     }
 
     @Override
     public void entriesDeleted(Collection<Jid> addresses) {
         L.d(new Object() {}, addresses.toString());
 
-        contactsWereUpdated();
+        EventBus.getDefault().post(new RefreshRoster());
     }
 
     @Override
@@ -73,11 +89,11 @@ public class RosterManager implements RosterListener {
         user.setUserPresence(getUserPresenceForUser(user.getUserJIDProperties()));
         EventBus.getDefault().post(new UserPresenceChangedMessage(user));
 
-        contactsWereUpdated();
+        EventBus.getDefault().post(new RefreshRoster());
     }
 
     public void sendPresence(UserPresenceType userPresence, String status) throws Exception {
-        Presence.Type type = null;
+        Presence.Type type;
         Presence.Mode mode = null;
         switch (userPresence) {
             case AVAILABLE:
@@ -105,27 +121,6 @@ public class RosterManager implements RosterListener {
         MyConnectionManager.instance().sendPresence(presence);
     }
 
-    public void addUserContactsUpdatedListener(UserContactsUpdatedListener listener) {
-        L.d(new Object() {});
-
-        if (listener != null) {
-            userContactsUpdatedListeners.add(listener);
-        }
-    }
-
-    public void removeUserContactsUpdatedListener(UserContactsUpdatedListener listener) {
-        L.d(new Object() {});
-
-        userContactsUpdatedListeners.remove(listener);
-    }
-
-    public List<User> getUserContacts() {
-        L.d(new Object() {});
-
-        updateUserContacts();
-        return userContacts;
-    }
-
     public RosterEntry getRosterEntryForUser(UserJIDProperties userJIDProperties) {
         L.d(new Object() {});
 
@@ -149,15 +144,8 @@ public class RosterManager implements RosterListener {
         }
     }
 
-    private void contactsWereUpdated() {
-        L.d(new Object() {});
-
-        updateUserContacts();
-        notifyUserContactsUpdatedListeners();
-    }
-
-    private void updateUserContacts() {
-        userContacts.clear();
+    public List<User> getUserContacts() {
+        List<User> userContacts = new ArrayList<>();
         Set<RosterEntry> entries = MyConnectionManager.instance().getRoster().getEntries();
 
         for (RosterEntry entry : entries) {
@@ -167,20 +155,54 @@ public class RosterManager implements RosterListener {
                 userContacts.add(user);
             }
         }
+
+        return userContacts;
     }
 
-    private void notifyUserContactsUpdatedListeners() {
-        ConnectApp.getMainHandler().post(new Runnable() {
+    public List<User> getUserSubscriptions() {
+        List<User> userContacts = new ArrayList<>();
+        Set<RosterEntry> entries = MyConnectionManager.instance().getRoster().getEntries();
+
+        for (RosterEntry entry : entries) {
+            if (entry.getType() == RosterPacket.ItemType.none) {
+                UserPresence userPresence = new UserPresence(MyConnectionManager.instance().getRoster().getPresence(entry.getJid()));
+                User user = new User(new UserJIDProperties(entry.getJid().toString()), entry, userPresence);
+                userContacts.add(user);
+            }
+        }
+
+        return userContacts;
+    }
+
+    public void acceptUserSubscription(User user) {
+        try {
+            MyConnectionManager.instance().getRoster().createEntry(JidCreate.bareFrom(user.getUserJIDProperties().getNameAndDomain()), user.getUserJIDProperties().getName(), null);
+            EventBus.getDefault().post(new RefreshRoster());
+        } catch (SmackException.NotLoggedInException | SmackException.NoResponseException | SmackException.NotConnectedException | InterruptedException | XmppStringprepException | XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void declineUserSubscription(final User user) {
+        new Thread(new Runnable() {
             @Override
             public void run() {
-                for (UserContactsUpdatedListener listener : userContactsUpdatedListeners) {
-                    listener.userContactsUpdated(Collections.unmodifiableList(userContacts));
+                try {
+                    MyConnectionManager.instance().getRoster().removeEntry(user.getRosterEntry());
+
+                    EventBus.getDefault().post(new RefreshRoster());
+                } catch (SmackException.NotLoggedInException e) {
+                    e.printStackTrace();
+                } catch (SmackException.NoResponseException e) {
+                    e.printStackTrace();
+                } catch (XMPPException.XMPPErrorException e) {
+                    e.printStackTrace();
+                } catch (SmackException.NotConnectedException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
-        });
-    }
-
-    public interface UserContactsUpdatedListener {
-        void userContactsUpdated(List<User> userContacts);
+        }).start();
     }
 }

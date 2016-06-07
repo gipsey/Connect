@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 23  // needs to be consistent with major support libs used
@@ -36,23 +37,19 @@ dependencies {
 
     testCompile 'junit:junit:4.11'
     testCompile 'org.mockito:mockito-core:1.9.5'
-    testCompile 'org.igniterealtime.smack:smack-integration-test:4.2.0-alpha3'
 
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
 
-    compile 'com.google.android.gms:play-services-location:8.4.0'
-    compile 'com.google.android.gms:play-services-maps:8.4.0'
+    compile 'com.google.android.gms:play-services-location:8.+'
+    compile 'com.google.android.gms:play-services-maps:8.+'
 
     compile 'com.google.code.gson:gson:2.5'
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'org.greenrobot:eventbus:3.0.0'
     compile 'com.ocpsoft:ocpsoft-pretty-time:1.0.7'
-
-    // OR THIS FOR EXPERIMENTAL EXTENSIONS
-    //    compile "org.igniterealtime.smack:smack-experimental:4.1.5"
 
     compile 'org.igniterealtime.smack:smack-android:4.2.0-alpha3'
     compile 'org.igniterealtime.smack:smack-tcp:4.2.0-alpha3'

@@ -13,6 +13,14 @@
         <item
             android:id="@+id/drawer_contacts"
             android:title="@string/drawer_contacts"/>
+
+        <item
+            android:id="@+id/drawer_rooms"
+            android:title="Rooms"/>
+
+        <item
+            android:id="@+id/drawer_logout"
+            android:title="Log out"/>
     </group>
 
     <item
@@ -20,14 +28,11 @@
 
         <menu>
             <item
+                android:id="@+id/drawer_settings"
+                android:title="Settings"/>
+            <item
                 android:id="@+id/drawer_about"
                 android:title="@string/drawer_about"/>
-            <item
-                android:id="@+id/drawer_debug_geoloc"
-                android:title="@string/drawer_debug"/>
-            <item
-                android:id="@+id/drawer_debug_map"
-                android:title="@string/drawer_debug_map"/>
         </menu>
     </item>
 

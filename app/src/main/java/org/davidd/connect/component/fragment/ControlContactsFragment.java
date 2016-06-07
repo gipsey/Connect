@@ -1,7 +1,6 @@
 package org.davidd.connect.component.fragment;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,8 +11,13 @@ import android.widget.TextView;
 import org.davidd.connect.R;
 import org.davidd.connect.component.adapter.ContactGroup;
 import org.davidd.connect.component.adapter.ContactsExpandableListAdapter;
+import org.davidd.connect.manager.RefreshRoster;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.model.User;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+import org.jivesoftware.smack.roster.RosterGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +25,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ControlContactsFragment extends ControlTabFragment implements RosterManager.UserContactsUpdatedListener {
+public class ControlContactsFragment extends ControlTabFragment {
 
     @Bind(R.id.contacts_expandableListView)
     ExpandableListView expandableListView;
@@ -75,7 +79,7 @@ public class ControlContactsFragment extends ControlTabFragment implements Roste
     @Override
     public void onStart() {
         super.onStart();
-        RosterManager.instance().addUserContactsUpdatedListener(this);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -86,57 +90,72 @@ public class ControlContactsFragment extends ControlTabFragment implements Roste
 
     @Override
     public void onStop() {
+        EventBus.getDefault().unregister(this);
         super.onStop();
-        RosterManager.instance().removeUserContactsUpdatedListener(this);
     }
 
     @Override
     public void onPagesSelected() {
     }
 
-    @Override
-    public void userContactsUpdated(List<User> userContacts) {
-        showUserContacts(userContacts);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void refresh(RefreshRoster refreshRoster) {
+        showUserContacts(RosterManager.instance().getUserContacts());
     }
 
     private void showUserContacts(List<User> userContacts) {
         contactGroups.clear();
-        updateContactGroups(userContacts);
-
+        contactGroups.addAll(updateContactSubscriptions(RosterManager.instance().getUserSubscriptions()));
+        contactGroups.addAll(updateContactGroups(userContacts));
         contactsExpandableListAdapter.notifyDataSetChanged();
     }
 
-    private void updateContactGroups(List<User> userContacts) {
-        for (int i = 0; i < userContacts.size(); i++) {
-            String groupName;
-            if (userContacts.get(i).getRosterEntry().getGroups().isEmpty()) {
-                groupName = getString(R.string.unfiled_group_name);
-            } else {
-                groupName = userContacts.get(i).getRosterEntry().getGroups().get(0).getName();
-            }
+    private List<ContactGroup> updateContactSubscriptions(List<User> userSubscriptions) {
+        List<ContactGroup> groups = new ArrayList<>();
 
-            ContactGroup group = getGroupFroName(groupName);
-            group.getUsers().add(userContacts.get(i));
-            // TODO crash
-//            java.lang.IndexOutOfBoundsException: Invalid index 1, size is 0
-//            at java.util.ArrayList.throwIndexOutOfBoundsException(ArrayList.java:255)
-//            at java.util.ArrayList.get(ArrayList.java:308)
-//            at java.util.Collections$UnmodifiableList.get(Collections.java:1050)
-//            at org.davidd.connect.component.fragment.ControlContactsFragment.updateContactGroups(ControlContactsFragment.java:119)
-//            at org.davidd.connect.component.fragment.ControlContactsFragment.showUserContacts(ControlContactsFragment.java:104)
-//            at org.davidd.connect.component.fragment.ControlContactsFragment.userContactsUpdated(ControlContactsFragment.java:99)
+        if (userSubscriptions.isEmpty()) {
+            return groups;
         }
+
+        ContactGroup group = new ContactGroup("Waiting for approval...", new ArrayList<User>());
+        group.setWaitingForApproval(true);
+        for (User user : userSubscriptions) {
+            group.getUsers().add(user);
+        }
+        groups.add(group);
+
+        return groups;
     }
 
-    private ContactGroup getGroupFroName(@NonNull String name) {
-        for (ContactGroup group : contactGroups) {
+    private List<ContactGroup> updateContactGroups(List<User> userContacts) {
+        List<ContactGroup> groups = new ArrayList<>();
+
+        for (User user : userContacts) {
+            if (user.getRosterEntry().getGroups().isEmpty()) {
+                String groupName = getString(R.string.unfiled_group_name);
+                ContactGroup contactGroup = getGroupFroName(groupName, groups);
+                contactGroup.getUsers().add(user);
+            } else {
+                for (RosterGroup rosterGroup : user.getRosterEntry().getGroups()) {
+                    String groupName = rosterGroup.getName();
+                    ContactGroup contactGroup = getGroupFroName(groupName, groups);
+                    contactGroup.getUsers().add(user);
+                }
+            }
+        }
+
+        return groups;
+    }
+
+    private ContactGroup getGroupFroName(String name, List<ContactGroup> groups) {
+        for (ContactGroup group : groups) {
             if (group.getGroupName().equals(name)) {
                 return group;
             }
         }
 
         ContactGroup group = new ContactGroup(name, new ArrayList<User>());
-        contactGroups.add(group);
+        groups.add(group);
 
         return group;
     }

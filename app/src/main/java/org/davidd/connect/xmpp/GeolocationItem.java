@@ -7,31 +7,6 @@ import org.jivesoftware.smackx.pubsub.Item;
 public class GeolocationItem extends Item {
 
     public static final String NODE = "http://jabber.org/protocol/geoloc";
-    public static final String ID_TAG = "id";
-
-    public static final String ACCURACY_TAG = "accuracy";
-    public static final String ALT_TAG = "alt";
-    public static final String ALTACCURACY_TAG = "altaccuracy";
-    public static final String AREA_TAG = "area";
-    public static final String BEARING_TAG = "bearing";
-    public static final String BUILDING_TAG = "building";
-    public static final String COUNTRY_TAG = "country";
-    public static final String COUNTRYCODE_TAG = "countrycode";
-    public static final String DATUM_TAG = "datum";
-    public static final String DESCRIPTION_TAG = "description";
-    public static final String FLOOR_TAG = "floor";
-    public static final String LAT_TAG = "lat";
-    public static final String LOCALITY_TAG = "locality";
-    public static final String LON_TAG = "lon";
-    public static final String POSTALCODE_TAG = "postalcode";
-    public static final String REGION_TAG = "region";
-    public static final String ROOM_TAG = "room";
-    public static final String SPEED_TAG = "speed";
-    public static final String STREET_TAG = "street";
-    public static final String TEXT_TAG = "text";
-    public static final String TIMESTAMP_TAG = "timestamp";
-    public static final String TZO_TAG = "tzo";
-    public static final String URI_TAG = "uri";
 
     private double accuracy;
     private double alt;

@@ -23,12 +23,14 @@ import android.widget.TextView;
 
 import org.davidd.connect.R;
 import org.davidd.connect.component.activity.ChatActivity;
+import org.davidd.connect.component.activity.MapsActivity;
 import org.davidd.connect.component.adapter.ChatAdapter;
 import org.davidd.connect.component.event.MucMessageEvent;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.model.MyMessage;
+import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -124,7 +126,9 @@ public class MucFragment extends Fragment {
 
                         return true;
                     case R.id.user_location:
-                        // TODO
+                        Bundle bundle = new Bundle();
+                        bundle.putString(MapsActivity.ROOM_NAME_BUNDLE_TAG, muc.getRoom().toString());
+                        ActivityUtils.navigate(getActivity(), MapsActivity.class, bundle, false);
                         return true;
                     default:
                         return false;

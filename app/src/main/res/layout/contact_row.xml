@@ -109,5 +109,28 @@
             android:gravity="end"
             android:singleLine="true"
             android:textSize="@dimen/textSizeSmall"/>
+
+        <ImageButton
+            android:id="@+id/remove_user_imageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:padding="@dimen/spacingNormal"
+            android:src="@drawable/ic_add_circle_black_24dp"
+            android:visibility="gone"/>
+
+        <ImageButton
+            android:id="@+id/add_user_imageButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/remove_user_imageButton"
+            android:background="@color/transparent"
+            android:padding="@dimen/spacingNormal"
+            android:src="@drawable/ic_remove_circle_black_24dp"
+            android:visibility="gone"/>
+
     </RelativeLayout>
 </LinearLayout>

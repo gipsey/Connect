@@ -107,11 +107,11 @@ public class User {
 
         User user = (User) o;
 
-        return userJIDProperties.getNameAndDomain().equals(user.getUserJIDProperties().getNameAndDomain());
+        return userJIDProperties.getName().equals(user.getUserJIDProperties().getName());
     }
 
     @Override
     public int hashCode() {
-        return userJIDProperties.getNameAndDomain().hashCode();
+        return userJIDProperties.getName().hashCode();
     }
 }

@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import org.davidd.connect.R;
 import org.davidd.connect.component.fragment.AddRoomOccupantsFragment;
 
-public class AddOccupantsActivity extends AppCompatActivity {
+public class AddOccupantsActivity extends BaseAppCompatActivity {
 
     public static final String ROOM_TAG = "RoomTag";
 

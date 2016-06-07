@@ -10,11 +10,9 @@ import org.davidd.connect.model.User;
 import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.HostedRoom;
-import org.jivesoftware.smackx.muc.InvitationListener;
 import org.jivesoftware.smackx.muc.MUCAffiliation;
 import org.jivesoftware.smackx.muc.MucConfigFormManager;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -32,7 +30,7 @@ import org.jxmpp.stringprep.XmppStringprepException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyMultiUserChatManager implements InvitationListener {
+public class MyMultiUserChatManager {
 
     public static final String SERVICE = "conference.localhost";
     private static MyMultiUserChatManager myMultiUserChatManager;
@@ -47,11 +45,6 @@ public class MyMultiUserChatManager implements InvitationListener {
             myMultiUserChatManager = new MyMultiUserChatManager();
         }
         return myMultiUserChatManager;
-    }
-
-    @Override
-    public void invitationReceived(XMPPConnection conn, MultiUserChat room, String inviter, String reason, String password, Message message) {
-
     }
 
     public DomainBareJid getMUCService() {
@@ -153,6 +146,11 @@ public class MyMultiUserChatManager implements InvitationListener {
         User me = UserManager.instance().getCurrentUser();
 
         for (HostedRoom room : allRooms) {
+            // TODO
+//            java.lang.NullPointerException
+//            at org.davidd.connect.manager.MyMultiUserChatManager.getUserRoomWithOwnerAffiliationSync(MyMultiUserChatManager.java:149)
+//            at org.davidd.connect.manager.MyMultiUserChatManager.access$100(MyMultiUserChatManager.java:33)
+//            at org.davidd.connect.manager.MyMultiUserChatManager$2.run(MyMultiUserChatManager.java:122)
             MultiUserChat chat = getMUCManager().getMultiUserChat(room.getJid());
 
             try {
@@ -304,7 +302,7 @@ public class MyMultiUserChatManager implements InvitationListener {
         }
     }
 
-//    getters and setters
+    //    getters and setters
 
     public MultiUserChat getMucByFullName(String roomName) {
         for (MultiUserChat chat : chats) {

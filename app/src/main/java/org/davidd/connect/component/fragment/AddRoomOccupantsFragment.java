@@ -21,10 +21,9 @@ import org.davidd.connect.component.adapter.AddOccupantsAdapter;
 import org.davidd.connect.manager.MyMultiUserChatManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.model.User;
+import org.davidd.connect.model.UserJIDProperties;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.jxmpp.jid.EntityBareJid;
 import org.jxmpp.jid.EntityFullJid;
-import org.jxmpp.jid.impl.JidCreate;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -146,21 +145,11 @@ public class AddRoomOccupantsFragment extends Fragment {
             User user = iterator.next();
 
             for (EntityFullJid occupant : muc.getOccupants()) {
-                try {
-                    String jid = occupant.asEntityFullJidIfPossible().getResourcepart().toString();
+                String jid = occupant.asEntityFullJidIfPossible().getResourcepart().toString();
+                User occupantUser = new User(new UserJIDProperties(jid));
 
-                    if (jid.equalsIgnoreCase(user.getUserJIDProperties().getName())) {
-                        iterator.remove();
-                        break;
-                    }
-
-                    EntityBareJid occupantBareJid = JidCreate.entityBareFrom(jid);
-
-                    if (user.getUserJIDProperties().getNameAndDomain().equalsIgnoreCase(occupantBareJid.toString())) {
-                        iterator.remove();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (user.equals(occupantUser)) {
+                    iterator.remove();
                 }
             }
         }

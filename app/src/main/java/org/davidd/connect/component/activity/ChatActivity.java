@@ -8,7 +8,7 @@ import org.davidd.connect.R;
 import org.davidd.connect.component.fragment.ChatFragment;
 import org.davidd.connect.component.fragment.MucFragment;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatActivity extends BaseAppCompatActivity {
 
     public static final String USER_TO_CHAT_WITH = "UserToChatWith";
     public static final String ROOM_NAME_TAG = "RoomNameTag";
