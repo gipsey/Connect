@@ -1,7 +1,6 @@
 package org.davidd.connect.component.activity;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.TypedValue;
@@ -23,8 +22,8 @@ import org.davidd.connect.R;
 import org.davidd.connect.component.adapter.MapMarkerInfoWindowAdapter;
 import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.MyMultiUserChatManager;
-import org.davidd.connect.manager.SavedUserLocationsChangedEvent;
 import org.davidd.connect.manager.UserManager;
+import org.davidd.connect.manager.events.SavedUserLocationsChangedEvent;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.xmpp.GeolocationItem;

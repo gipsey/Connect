@@ -31,9 +31,7 @@ import org.jivesoftware.smack.SmackException;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.chat.ChatManager;
-import org.jivesoftware.smack.filter.StanzaFilter;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.provider.ProviderManager;
 import org.jivesoftware.smack.roster.Roster;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
@@ -393,15 +391,8 @@ public class MyConnectionManager implements ConnectionListener {
 
         // set up roster
         roster = Roster.getInstanceFor(MyConnectionManager.instance().getXmppTcpConnection());
-        roster.setSubscriptionMode(Roster.SubscriptionMode.manual);
+        roster.setSubscriptionMode(Roster.SubscriptionMode.accept_all);
         roster.addRosterListener(RosterManager.instance());
-
-        xmppTcpConnection.addAsyncStanzaListener(RosterManager.instance(), new StanzaFilter() {
-            @Override
-            public boolean accept(Stanza stanza) {
-                return stanza instanceof Presence;
-            }
-        });
 
         // set up chat manager
         chatManager = ChatManager.getInstanceFor(xmppTcpConnection);
@@ -463,8 +454,7 @@ public class MyConnectionManager implements ConnectionListener {
     }
 
     public Roster getRoster() {
-                return roster;
-//        return Roster.getInstanceFor(xmppTcpConnection);
+        return roster;
     }
 
     public ChatManager getChatManager() {

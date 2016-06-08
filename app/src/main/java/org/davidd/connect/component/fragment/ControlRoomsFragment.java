@@ -139,7 +139,6 @@ public class ControlRoomsFragment extends ControlTabFragment {
         ((TextView) roomsListView.getEmptyView()).setText(getString(R.string.no_rooms));
     }
 
-
     private void roomsUpdated(List<MultiUserChat> chats) {
         roomsArrayAdapter.clear();
 

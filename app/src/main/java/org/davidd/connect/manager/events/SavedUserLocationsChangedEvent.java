@@ -1,4 +1,4 @@
-package org.davidd.connect.manager;
+package org.davidd.connect.manager.events;
 
 import org.davidd.connect.model.User;
 

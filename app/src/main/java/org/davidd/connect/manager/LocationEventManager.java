@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.manager.events.SavedUserLocationsChangedEvent;
 import org.davidd.connect.model.User;
 import org.davidd.connect.xmpp.GeolocationEventElement;
 import org.davidd.connect.xmpp.GeolocationItem;

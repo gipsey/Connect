@@ -1,19 +1,28 @@
 package org.davidd.connect.component.fragment;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.davidd.connect.R;
 import org.davidd.connect.component.adapter.ContactGroup;
 import org.davidd.connect.component.adapter.ContactsExpandableListAdapter;
 import org.davidd.connect.manager.RefreshRoster;
 import org.davidd.connect.manager.RosterManager;
+import org.davidd.connect.manager.events.UserAcceptedStatusEvent;
+import org.davidd.connect.manager.events.UserDeclinedStatusEvent;
 import org.davidd.connect.model.User;
+import org.davidd.connect.model.UserJIDProperties;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -29,6 +38,9 @@ public class ControlContactsFragment extends ControlTabFragment {
 
     @Bind(R.id.contacts_expandableListView)
     ExpandableListView expandableListView;
+
+    @Bind(R.id.addContact_floatingActionButton)
+    FloatingActionButton addContactFloatingActionButton;
 
     private ContactsExpandableListAdapter contactsExpandableListAdapter;
     private List<ContactGroup> contactGroups = new ArrayList<>();
@@ -74,6 +86,13 @@ public class ControlContactsFragment extends ControlTabFragment {
                 return true;
             }
         });
+
+        addContactFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showNewContactAlert();
+            }
+        });
     }
 
     @Override
@@ -103,6 +122,24 @@ public class ControlContactsFragment extends ControlTabFragment {
         showUserContacts(RosterManager.instance().getUserContacts());
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void userAcceptedStatusEvent(UserAcceptedStatusEvent event) {
+        if (event.isSuccess()) {
+            Toast.makeText(getActivity(), "Contact " + event.getUser().getUserJIDProperties().getName() + " was added successfully", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getActivity(), "Contact " + event.getUser().getUserJIDProperties().getName() + " wasn't added", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void userDeclinedStatusEvent(UserDeclinedStatusEvent event) {
+        if (event.isSuccess()) {
+            Toast.makeText(getActivity(), "Contact " + event.getUser().getUserJIDProperties().getName() + " was declined successfully", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(getActivity(), "Contact " + event.getUser().getUserJIDProperties().getName() + " wasn't declined", Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void showUserContacts(List<User> userContacts) {
         contactGroups.clear();
         contactGroups.addAll(updateContactSubscriptions(RosterManager.instance().getUserSubscriptions()));
@@ -117,7 +154,7 @@ public class ControlContactsFragment extends ControlTabFragment {
             return groups;
         }
 
-        ContactGroup group = new ContactGroup("Waiting for approval...", new ArrayList<User>());
+        ContactGroup group = new ContactGroup("They wait for me...", new ArrayList<User>());
         group.setWaitingForApproval(true);
         for (User user : userSubscriptions) {
             group.getUsers().add(user);
@@ -158,5 +195,34 @@ public class ControlContactsFragment extends ControlTabFragment {
         groups.add(group);
 
         return group;
+    }
+
+    private void showNewContactAlert() {
+        final EditText editText = new EditText(getActivity());
+        editText.setSingleLine();
+        editText.setHint("Enter contact's name with domain");
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+        editText.setLayoutParams(layoutParams);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setCancelable(true);
+        builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                contactAddingAttempt(editText.getText().toString());
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+
+        builder.setView(editText);
+
+        builder.create().show();
+    }
+
+    private void contactAddingAttempt(String userJid) {
+        User user = new User(new UserJIDProperties(userJid));
+        RosterManager.instance().addContact(user);
     }
 }

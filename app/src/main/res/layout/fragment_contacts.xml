@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+<android.support.design.widget.CoordinatorLayout
+    android:id="@+id/main_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <ExpandableListView
         android:id="@+id/contacts_expandableListView"
@@ -18,4 +19,13 @@
         android:gravity="center"
         android:textAllCaps="false"
         android:textSize="@dimen/textSizeLarge"/>
-</LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/addContact_floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/spacingLarge"
+        android:src="@drawable/ic_add_white_36dp"/>
+
+</android.support.design.widget.CoordinatorLayout>

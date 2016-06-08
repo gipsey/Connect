@@ -2,16 +2,16 @@ package org.davidd.connect.manager;
 
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.manager.events.UserAcceptedStatusEvent;
+import org.davidd.connect.manager.events.UserDeclinedStatusEvent;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserJIDProperties;
 import org.davidd.connect.model.UserPresence;
 import org.davidd.connect.model.UserPresenceType;
 import org.greenrobot.eventbus.EventBus;
 import org.jivesoftware.smack.SmackException;
-import org.jivesoftware.smack.StanzaListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
-import org.jivesoftware.smack.packet.Stanza;
 import org.jivesoftware.smack.roster.RosterEntry;
 import org.jivesoftware.smack.roster.RosterListener;
 import org.jivesoftware.smack.roster.packet.RosterPacket;
@@ -28,7 +28,7 @@ import java.util.Set;
  * @author David Debre
  *         on 2015/12/20
  */
-public class RosterManager implements RosterListener, StanzaListener {
+public class RosterManager implements RosterListener {
 
     private static RosterManager rosterManager;
 
@@ -40,24 +40,6 @@ public class RosterManager implements RosterListener, StanzaListener {
             rosterManager = new RosterManager();
         }
         return rosterManager;
-    }
-
-    @Override
-    public void processPacket(Stanza packet) throws SmackException.NotConnectedException, InterruptedException {
-        if (!(packet instanceof Presence)) {
-            return;
-        }
-
-        Presence presence = (Presence) packet;
-        if (presence.getType() == Presence.Type.subscribe) {
-
-
-
-
-
-
-            EventBus.getDefault().post(new RefreshRoster());
-        }
     }
 
     @Override
@@ -164,7 +146,7 @@ public class RosterManager implements RosterListener, StanzaListener {
         Set<RosterEntry> entries = MyConnectionManager.instance().getRoster().getEntries();
 
         for (RosterEntry entry : entries) {
-            if (entry.getType() == RosterPacket.ItemType.none) {
+            if (entry.getType() == RosterPacket.ItemType.from) {
                 UserPresence userPresence = new UserPresence(MyConnectionManager.instance().getRoster().getPresence(entry.getJid()));
                 User user = new User(new UserJIDProperties(entry.getJid().toString()), entry, userPresence);
                 userContacts.add(user);
@@ -176,33 +158,43 @@ public class RosterManager implements RosterListener, StanzaListener {
 
     public void acceptUserSubscription(User user) {
         try {
-            MyConnectionManager.instance().getRoster().createEntry(JidCreate.bareFrom(user.getUserJIDProperties().getNameAndDomain()), user.getUserJIDProperties().getName(), null);
-            EventBus.getDefault().post(new RefreshRoster());
-        } catch (SmackException.NotLoggedInException | SmackException.NoResponseException | SmackException.NotConnectedException | InterruptedException | XmppStringprepException | XMPPException.XMPPErrorException e) {
+            Presence packet = new Presence(Presence.Type.subscribed);
+            packet.setTo(JidCreate.bareFrom(user.getUserJIDProperties().getNameAndDomain()));
+            MyConnectionManager.instance().getXmppTcpConnection().sendStanza(packet);
+
+            addContact(user);
+        } catch (XmppStringprepException | InterruptedException | SmackException.NotConnectedException e) {
             e.printStackTrace();
+            EventBus.getDefault().post(new UserAcceptedStatusEvent(user, false));
         }
     }
 
-    public void declineUserSubscription(final User user) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    MyConnectionManager.instance().getRoster().removeEntry(user.getRosterEntry());
+    public void addContact(User user) {
+        try {
+            MyConnectionManager.instance().getRoster().createEntry(
+                    JidCreate.bareFrom(user.getUserJIDProperties().getNameAndDomain()),
+                    user.getUserJIDProperties().getName(),
+                    null);
 
-                    EventBus.getDefault().post(new RefreshRoster());
-                } catch (SmackException.NotLoggedInException e) {
-                    e.printStackTrace();
-                } catch (SmackException.NoResponseException e) {
-                    e.printStackTrace();
-                } catch (XMPPException.XMPPErrorException e) {
-                    e.printStackTrace();
-                } catch (SmackException.NotConnectedException e) {
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+            EventBus.getDefault().post(new RefreshRoster());
+            EventBus.getDefault().post(new UserAcceptedStatusEvent(user, true));
+        } catch (XmppStringprepException | InterruptedException | SmackException.NotConnectedException | SmackException.NotLoggedInException | SmackException.NoResponseException | XMPPException.XMPPErrorException e) {
+            e.printStackTrace();
+            EventBus.getDefault().post(new UserAcceptedStatusEvent(user, false));
+        }
+    }
+
+    public void declineUserSubscription(User user) {
+        try {
+            Presence packet = new Presence(Presence.Type.unsubscribed);
+            packet.setTo(JidCreate.bareFrom(user.getUserJIDProperties().getNameAndDomain()));
+            MyConnectionManager.instance().getXmppTcpConnection().sendStanza(packet);
+
+            EventBus.getDefault().post(new RefreshRoster());
+            EventBus.getDefault().post(new UserDeclinedStatusEvent(user, true));
+        } catch (XmppStringprepException | InterruptedException | SmackException.NotConnectedException e) {
+            e.printStackTrace();
+            EventBus.getDefault().post(new UserDeclinedStatusEvent(user, false));
+        }
     }
 }
