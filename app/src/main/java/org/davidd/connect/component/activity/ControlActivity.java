@@ -8,6 +8,7 @@ import org.davidd.connect.component.fragment.ControlFragment;
 import org.davidd.connect.model.Room;
 import org.davidd.connect.model.User;
 import org.davidd.connect.util.ActivityUtils;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
@@ -52,9 +53,9 @@ public class ControlActivity extends NavigationActivity implements NavigateToCha
     }
 
     @Override
-    public void navigateToChat(Room room) {
+    public void navigateToChat(MultiUserChat muc) {
         Bundle bundle = new Bundle();
-        bundle.putString(ChatActivity.ROOM_NAME_TAG, room.getMuc().getRoom().toString());
+        bundle.putString(ChatActivity.ROOM_NAME_TAG, muc.getRoom().toString());
 
         ActivityUtils.navigate(this, ChatActivity.class, bundle,
                 Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP, false);

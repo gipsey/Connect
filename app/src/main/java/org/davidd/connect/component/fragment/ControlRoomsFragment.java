@@ -85,7 +85,7 @@ public class ControlRoomsFragment extends ControlTabFragment {
         roomsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                navigateToChatListener.navigateToChat(roomsArrayAdapter.getItem(position));
+                navigateToChatListener.navigateToChat(roomsArrayAdapter.getItem(position).getMuc());
             }
         });
 

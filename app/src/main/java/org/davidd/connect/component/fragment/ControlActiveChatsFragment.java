@@ -14,6 +14,7 @@ import org.davidd.connect.component.adapter.ActiveChatsAdapter;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.UserPresenceChangedMessage;
 import org.davidd.connect.model.ActiveBaseChat;
+import org.davidd.connect.model.ActiveRoomChat;
 import org.davidd.connect.model.ActiveUserChat;
 import org.davidd.connect.model.User;
 import org.greenrobot.eventbus.EventBus;
@@ -62,8 +63,13 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO
-//                navigateToChatListener.navigateToChat(chatsAdapter.getItem(position).getUserToChatWith());
+                ActiveBaseChat baseChat = chatsAdapter.getItem(position);
+
+                if (baseChat instanceof ActiveUserChat) {
+                    navigateToChatListener.navigateToChat(((ActiveUserChat) baseChat).getUserToChatWith());
+                } else if (baseChat instanceof ActiveRoomChat) {
+                    navigateToChatListener.navigateToChat(((ActiveRoomChat) baseChat).getMultiUserChat());
+                }
             }
         });
     }
@@ -112,6 +118,5 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
     private void updateActiveChats(List<ActiveBaseChat> activeBaseChats) {
         chatsAdapter.clear();
         chatsAdapter.addAll(activeBaseChats);
-        chatsAdapter.notifyDataSetChanged();
     }
 }

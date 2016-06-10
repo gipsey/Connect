@@ -29,6 +29,7 @@ import org.davidd.connect.component.event.MucMessageEvent;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.MyMultiUserChatManager;
+import org.davidd.connect.model.MyConversation;
 import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
@@ -157,6 +158,10 @@ public class MucFragment extends Fragment {
     public void onStart() {
         super.onStart();
         EventBus.getDefault().register(this);
+
+        MyConversation conversation = MyChatManager.instance().loadConversation(muc.getRoom().toString());
+        chatAdapter.clear();
+        chatAdapter.addAll(conversation.getMessageList());
     }
 
     @Override

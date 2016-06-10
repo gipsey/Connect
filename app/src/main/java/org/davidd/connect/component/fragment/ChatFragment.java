@@ -32,6 +32,7 @@ import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.manager.UserPresenceChangedMessage;
+import org.davidd.connect.model.MyConversation;
 import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.model.User;
 import org.davidd.connect.model.UserPresenceType;
@@ -165,6 +166,10 @@ public class ChatFragment extends Fragment implements
         super.onStart();
         MyChatManager.instance().addMessageReceivedListener(userToChatWith, this);
         EventBus.getDefault().register(this);
+
+        MyConversation conversation = MyChatManager.instance().loadConversation(userToChatWith.getUserJIDProperties().getNameAndDomain());
+        chatAdapter.clear();
+        chatAdapter.addAll(conversation.getMessageList());
     }
 
     @Override

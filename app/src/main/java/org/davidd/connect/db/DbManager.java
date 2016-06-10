@@ -130,7 +130,7 @@ public class DbManager {
 
     private MyConversation mapConversation(RealmConversation realmConversation) {
         if (realmConversation == null) {
-            return null;
+            return new MyConversation();
         }
 
         MyConversation myConversation = new MyConversation();

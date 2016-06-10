@@ -38,12 +38,6 @@ import java.util.Map;
 public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
     private static MyChatManager myChatManager;
-
-    // the used key is the participant user's name and domain
-    private Map<String, MyConversation> conversations = new HashMap<>(); // TODO: make persistent
-    // the used key is the entire bare jid of the room name as String
-    private Map<String, MyConversation> groupConversations = new HashMap<>(); // TODO: make persistent
-
     private List<ActiveBaseChat> activeBaseChats = new ArrayList<>();
 
     // the used key is the user's name and domain
@@ -118,7 +112,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
                     DataUtils.getCurrentDate(),
                     message.getBody());
 
-            saveMessageInHistory(partnerEntityBareJid, myMessage);
+            persistConversation(myMessage);
 
             return myMessage;
         } catch (SmackException.NotConnectedException | XmppStringprepException | InterruptedException e) {
@@ -150,7 +144,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
                     DataUtils.getCurrentDate(),
                     message.getBody());
 
-            saveMessageInHistory(muc.getRoom(), myMessage);
+            persistConversation(myMessage);
 
             return myMessage;
         } catch (SmackException.NotConnectedException | InterruptedException e) {
@@ -167,10 +161,6 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         chat.addMessageListener(this);
 
         User participant = getPartnerUser(chat, null);
-        if (!conversations.containsKey(participant.getUserJIDProperties().getNameAndDomain())) {
-            conversations.put(participant.getUserJIDProperties().getNameAndDomain(), new MyConversation());
-        }
-
         if (createdLocally) {
             chatsUpdated(participant);
         }
@@ -205,7 +195,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
                 DataUtils.getCurrentDate(),
                 message.getBody());
 
-        saveMessageInHistory(partnerEntityBareJid, myMessage);
+        persistConversation(myMessage);
         notifyMessageReceivedListeners(partner, myMessage);
 
         chatsUpdated(partner);
@@ -231,7 +221,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
                 DataUtils.getCurrentDate(),
                 message.getBody());
 
-        saveMessageInHistory(muc.getRoom(), myMessage);
+        persistConversation(myMessage);
 
         EventBus.getDefault().post(new MucMessageEvent(muc, myMessage));
 
@@ -265,20 +255,12 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         return Collections.unmodifiableList(activeBaseChats);
     }
 
-    private void saveMessageInHistory(EntityBareJid participantEntityBareJid, MyMessage myMessage) {
-        L.d(new Object() {});
-
-        if (myMessage.getType().equals(MyMessage.Type.NORMAL)) {
-            conversations.get(participantEntityBareJid.toString()).getMessageList().add(myMessage);
-        } else {
-            if (!groupConversations.containsKey(participantEntityBareJid.toString())) {
-                groupConversations.put(participantEntityBareJid.toString(), new MyConversation());
-            }
-
-            groupConversations.get(participantEntityBareJid.toString()).getMessageList().add(myMessage);
-        }
-
+    private void persistConversation(MyMessage myMessage) {
         DbManager.instance().saveMessage(myMessage);
+    }
+
+    public MyConversation loadConversation(String partnerEntityNameAndDomain) {
+        return DbManager.instance().getConversation(partnerEntityNameAndDomain);
     }
 
     private void notifyMessageReceivedListeners(final User senderUser, final MyMessage myMessage) {
@@ -310,7 +292,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
             public void run() {
                 // update active chats list
                 MyConversation myConversation =
-                        conversations.get(participant.getUserJIDProperties().getNameAndDomain());
+                        DbManager.instance().getConversation(participant.getUserJIDProperties().getNameAndDomain());
 
                 participant.setRosterEntry(RosterManager.instance().getRosterEntryForUser(participant.getUserJIDProperties()));
                 participant.setUserPresence(RosterManager.instance().getUserPresenceForUser(participant.getUserJIDProperties()));

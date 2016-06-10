@@ -114,8 +114,8 @@
     <orderEntry type="library" exported="" name="smack-im-4.2.0-alpha3" level="project" />
     <orderEntry type="library" exported="" name="smack-android-4.2.0-alpha3" level="project" />
     <orderEntry type="library" exported="" name="play-services-location-8.4.0" level="project" />
-    <orderEntry type="library" exported="" name="eventbus-3.0.0" level="project" />
     <orderEntry type="library" exported="" name="realm-annotations-1.0.0" level="project" />
+    <orderEntry type="library" exported="" name="eventbus-3.0.0" level="project" />
     <orderEntry type="library" exported="" name="support-annotations-23.1.1" level="project" />
     <orderEntry type="library" exported="" name="realm-android-library-1.0.0" level="project" />
     <orderEntry type="library" exported="" name="smack-extensions-4.2.0-alpha3" level="project" />
