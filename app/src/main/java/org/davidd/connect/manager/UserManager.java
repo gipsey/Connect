@@ -1,5 +1,6 @@
 package org.davidd.connect.manager;
 
+import org.davidd.connect.db.DbManager;
 import org.davidd.connect.model.User;
 
 public class UserManager {
@@ -38,5 +39,6 @@ public class UserManager {
     public void logOut() {
         currentUser = null;
         PreferencesManager.instance().clearUser();
+        DbManager.instance().deleteAllConversation();
     }
 }

@@ -92,14 +92,14 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveBaseChat> {
         viewHolder.firstLetterTextView.setText(String.valueOf(chat.getUserToChatWith().getUserJIDProperties().getJID().charAt(0)));
         viewHolder.userNameTextView.setText(chat.getUserToChatWith().getUserJIDProperties().getNameAndDomain());
 
-        if (chat.getMyMessage() == null || DataUtils.isEmpty(chat.getMyMessage().getMessage().getBody())) {
+        if (chat.getMyMessage() == null || DataUtils.isEmpty(chat.getMyMessage().getMessageBody())) {
             viewHolder.statusTextView.setVisibility(View.GONE);
             viewHolder.statusTextView.setText(null);
 
             viewHolder.rightBottomTextView.setVisibility(View.GONE);
             viewHolder.rightBottomTextView.setText(null);
         } else {
-            String lastMessage = chat.getMyMessage().getMessage().getBody();
+            String lastMessage = chat.getMyMessage().getMessageBody();
             if (chat.getMyMessage().getSender().equals(UserManager.instance().getCurrentUser())) {
                 lastMessage = "<b>You:</b>  " + lastMessage;
             }
@@ -125,14 +125,14 @@ public class ActiveChatsAdapter extends ArrayAdapter<ActiveBaseChat> {
         viewHolder.firstLetterTextView.setText(String.valueOf(roomChat.getMultiUserChat().getRoom().toString().charAt(0)));
         viewHolder.userNameTextView.setText(roomChat.getMultiUserChat().getRoom().toString());
 
-        if (roomChat.getMyMessage() == null || DataUtils.isEmpty(roomChat.getMyMessage().getMessage().getBody())) {
+        if (roomChat.getMyMessage() == null || DataUtils.isEmpty(roomChat.getMyMessage().getMessageBody())) {
             viewHolder.statusTextView.setVisibility(View.GONE);
             viewHolder.statusTextView.setText(null);
 
             viewHolder.rightBottomTextView.setVisibility(View.GONE);
             viewHolder.rightBottomTextView.setText(null);
         } else {
-            String lastMessage = roomChat.getMyMessage().getMessage().getBody();
+            String lastMessage = roomChat.getMyMessage().getMessageBody();
             if (roomChat.getMyMessage().getSender().equals(UserManager.instance().getCurrentUser())) {
                 lastMessage = "<b>You:</b>  " + lastMessage;
             }

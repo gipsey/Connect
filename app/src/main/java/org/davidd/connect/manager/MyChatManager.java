@@ -2,10 +2,12 @@ package org.davidd.connect.manager;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.davidd.connect.ConnectApp;
 import org.davidd.connect.component.event.MucMessageEvent;
 import org.davidd.connect.connection.MyConnectionManager;
+import org.davidd.connect.db.DbManager;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.model.ActiveBaseChat;
 import org.davidd.connect.model.ActiveRoomChat;
@@ -42,7 +44,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
     // the used key is the entire bare jid of the room name as String
     private Map<String, MyConversation> groupConversations = new HashMap<>(); // TODO: make persistent
 
-    private List<ActiveBaseChat> activeBaseChats = new ArrayList<>(); // TODO: make persistent
+    private List<ActiveBaseChat> activeBaseChats = new ArrayList<>();
 
     // the used key is the user's name and domain
     private Map<String, List<MessageReceivedListener>> messageListeners = new HashMap<>();
@@ -108,15 +110,15 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
             L.d(new Object() {}, "Message sent to: " + userToChatWith.getUserJIDProperties().getJID()
                     + ", message: " + message.getBody());
 
-            EntityBareJid receiverEntity = JidCreate.entityBareFrom(userToChatWith.getUserJIDProperties().getNameAndDomain());
+            EntityBareJid partnerEntityBareJid = JidCreate.entityBareFrom(userToChatWith.getUserJIDProperties().getNameAndDomain());
 
             MyMessage myMessage = new MyMessage(
                     UserManager.instance().getCurrentUser(),
-                    receiverEntity,
+                    partnerEntityBareJid,
                     DataUtils.getCurrentDate(),
-                    message);
+                    message.getBody());
 
-            saveMessageInHistory(receiverEntity, myMessage);
+            saveMessageInHistory(partnerEntityBareJid, myMessage);
 
             return myMessage;
         } catch (SmackException.NotConnectedException | XmppStringprepException | InterruptedException e) {
@@ -142,10 +144,11 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
             L.d(new Object() {}, "Group message sent to: " + muc.getRoom() + ", message: " + message.getBody());
 
             MyMessage myMessage = new MyMessage(
+                    MyMessage.Type.GROUP,
                     UserManager.instance().getCurrentUser(),
                     muc.getRoom(),
                     DataUtils.getCurrentDate(),
-                    message);
+                    message.getBody());
 
             saveMessageInHistory(muc.getRoom(), myMessage);
 
@@ -163,7 +166,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
         chat.addMessageListener(this);
 
-        User participant = getParticipantUser(chat, null);
+        User participant = getPartnerUser(chat, null);
         if (!conversations.containsKey(participant.getUserJIDProperties().getNameAndDomain())) {
             conversations.put(participant.getUserJIDProperties().getNameAndDomain(), new MyConversation());
         }
@@ -180,43 +183,53 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
     public void processMessage(Chat chat, Message message) {
         L.d(new Object() {}, "Message from = " + chat.getParticipant());
 
-        User participant = getParticipantUser(chat, message);
+        if (!message.getType().equals(Message.Type.normal) && !message.getType().equals(Message.Type.chat)) {
+            return;
+        }
 
-        EntityBareJid participantJid = null;
-        EntityBareJid me = null;
+        if (TextUtils.isEmpty(message.getBody())) {
+            return;
+        }
+
+        User partner = getPartnerUser(chat, message);
+        EntityBareJid partnerEntityBareJid = null;
         try {
-            participantJid = JidCreate.entityBareFrom(participant.getUserJIDProperties().getNameAndDomain());
-            me = JidCreate.entityBareFrom(UserManager.instance().getCurrentUser().getUserJIDProperties().getNameAndDomain());
-            // TODO
-//            java.lang.NullPointerException
-//            at org.davidd.connect.manager.MyChatManager.processMessage(MyChatManager.java:189)
-//            at org.jivesoftware.smack.chat.Chat.deliver(Chat.java:183)
+            partnerEntityBareJid = JidCreate.entityBareFrom(partner.getUserJIDProperties().getNameAndDomain());
         } catch (XmppStringprepException e) {
             e.printStackTrace();
         }
 
         MyMessage myMessage = new MyMessage(
-                participant,
-                me,
+                partner,
+                partnerEntityBareJid,
                 DataUtils.getCurrentDate(),
-                message);
+                message.getBody());
 
-        saveMessageInHistory(participantJid, myMessage);
-        notifyMessageReceivedListeners(participant, myMessage);
+        saveMessageInHistory(partnerEntityBareJid, myMessage);
+        notifyMessageReceivedListeners(partner, myMessage);
 
-        chatsUpdated(participant);
+        chatsUpdated(partner);
     }
 
     public void processMessage(MultiUserChat muc, Message message) {
         L.d(new Object() {}, "Message from = " + muc.getRoom().toString());
 
+        if (!message.getType().equals(Message.Type.groupchat)) {
+            return;
+        }
+
+        if (TextUtils.isEmpty(message.getBody())) {
+            return;
+        }
+
         User sender = new User(new UserJIDProperties(message.getFrom().getResourceOrNull().toString()));
 
         MyMessage myMessage = new MyMessage(
+                MyMessage.Type.GROUP,
                 sender,
                 muc.getRoom(),
                 DataUtils.getCurrentDate(),
-                message);
+                message.getBody());
 
         saveMessageInHistory(muc.getRoom(), myMessage);
 
@@ -255,18 +268,17 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
     private void saveMessageInHistory(EntityBareJid participantEntityBareJid, MyMessage myMessage) {
         L.d(new Object() {});
 
-        if (isChat(myMessage.getMessage())) {
-            L.d(new Object() {}, "Saving message: " + myMessage.getMessage().getBody() + ", from : " + myMessage.getMessage().getFrom() + ", to: " + myMessage.getMessage().getTo());
+        if (myMessage.getType().equals(MyMessage.Type.NORMAL)) {
             conversations.get(participantEntityBareJid.toString()).getMessageList().add(myMessage);
-        } else if (isGroupChat(myMessage.getMessage())) {
-            L.d(new Object() {}, "Saving group message: " + myMessage.getMessage().getBody() + ", from : " + myMessage.getMessage().getFrom() + ", to: " + myMessage.getMessage().getTo());
-
+        } else {
             if (!groupConversations.containsKey(participantEntityBareJid.toString())) {
                 groupConversations.put(participantEntityBareJid.toString(), new MyConversation());
             }
 
             groupConversations.get(participantEntityBareJid.toString()).getMessageList().add(myMessage);
         }
+
+        DbManager.instance().saveMessage(myMessage);
     }
 
     private void notifyMessageReceivedListeners(final User senderUser, final MyMessage myMessage) {
@@ -337,30 +349,12 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         });
     }
 
-    private User getParticipantUser(Chat chat, Message message) {
+    private User getPartnerUser(Chat chat, Message message) {
         if (message != null && !DataUtils.isEmpty(message.getFrom())) {
             return new User(new UserJIDProperties(message.getFrom().toString()));
         } else {
             return new User(new UserJIDProperties(chat.getParticipant().toString()));
         }
-    }
-
-    private User getReceiverUser(Message message) {
-        if (!DataUtils.isEmpty(message.getTo())) {
-            return new User(new UserJIDProperties(message.getTo().toString()));
-        } else {
-            return UserManager.instance().getCurrentUser();
-        }
-    }
-
-    private boolean isChat(Message message) {
-        return (message.getType() == Message.Type.chat || message.getType() == Message.Type.normal)
-                && !DataUtils.isEmpty(message.getBody());
-    }
-
-    private boolean isGroupChat(Message message) {
-        return (message.getType() == Message.Type.groupchat)
-                && !DataUtils.isEmpty(message.getBody());
     }
 
     private ChatManager getChatManager() {

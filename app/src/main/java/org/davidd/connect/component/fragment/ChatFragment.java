@@ -41,7 +41,6 @@ import org.davidd.connect.util.DisplayUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.packet.Message;
 
 import java.util.ArrayList;
 
@@ -176,9 +175,9 @@ public class ChatFragment extends Fragment implements
 
     @Override
     public void onStop() {
-        super.onStop();
         MyChatManager.instance().removeMessageReceivedListener(userToChatWith, this);
         EventBus.getDefault().unregister(this);
+        super.onStop();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -244,17 +243,8 @@ public class ChatFragment extends Fragment implements
     @Override
     public void messageReceived(MyMessage myMessage) {
         L.d(new Object() {});
-        if (!isMessageValid(myMessage.getMessage())) {
-            L.d(new Object() {}, "Message is empty");
-            return;
-        }
 
         chatAdapter.add(myMessage);
         chatAdapter.notifyDataSetChanged();
-    }
-
-    private boolean isMessageValid(Message message) {
-        return (message.getType() == Message.Type.chat || message.getType() == Message.Type.normal)
-                && !DataUtils.isEmpty(message.getBody());
     }
 }

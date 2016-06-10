@@ -35,7 +35,6 @@ import org.davidd.connect.util.DataUtils;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jxmpp.jid.EntityFullJid;
 
@@ -188,10 +187,6 @@ public class MucFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void messageReceived(MucMessageEvent mucMessageEvent) {
         L.d(new Object() {});
-        if (!isMessageValid(mucMessageEvent.getMyMessage().getMessage())) {
-            L.d(new Object() {}, "Message is empty");
-            return;
-        }
 
         chatAdapter.add(mucMessageEvent.getMyMessage());
         chatAdapter.notifyDataSetChanged();
@@ -209,10 +204,5 @@ public class MucFragment extends Fragment {
         MyMessage myMessage = MyChatManager.instance().sendMessage(muc, message);
 
         // no need to add to the adapter because will be received as a message
-    }
-
-    private boolean isMessageValid(Message message) {
-        return (message.getType() == Message.Type.groupchat)
-                && !DataUtils.isEmpty(message.getBody());
     }
 }

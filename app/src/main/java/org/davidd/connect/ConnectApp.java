@@ -4,7 +4,8 @@ import android.app.Application;
 import android.os.Handler;
 import android.os.Looper;
 
-import org.davidd.connect.manager.RosterManager;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 
 /**
  * @author David Debre
@@ -29,6 +30,9 @@ public class ConnectApp extends Application {
         connectApp = this;
         mainHandler = new Handler(Looper.getMainLooper());
 
-
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder(this)
+                .deleteRealmIfMigrationNeeded()
+                .build();
+        Realm.setDefaultConfiguration(realmConfiguration);
     }
 }
