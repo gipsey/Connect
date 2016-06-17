@@ -1,9 +1,7 @@
 package org.davidd.connect.component.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -21,9 +19,6 @@ import android.widget.Toast;
 
 import org.davidd.connect.R;
 import org.davidd.connect.component.adapter.PresenceStatusAdapter;
-import org.davidd.connect.connection.ConnectionService;
-import org.davidd.connect.connection.MyConnectionManager;
-import org.davidd.connect.connection.event.OnDisconnectEvent;
 import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.manager.UserManager;
@@ -35,8 +30,6 @@ import org.davidd.connect.util.BitmapUtil;
 import org.davidd.connect.util.DataUtils;
 import org.davidd.connect.util.DisplayUtils;
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;

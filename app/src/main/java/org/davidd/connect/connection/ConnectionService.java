@@ -32,7 +32,7 @@ public class ConnectionService extends Service {
 
         executorService = Executors.newSingleThreadExecutor();
 
-//        startInForeground(); // TODO: no need for notification just to make the service untouchable
+        //        startInForeground(); // TODO: no need for notification just to make the service untouchable
     }
 
     @Override

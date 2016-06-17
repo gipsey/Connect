@@ -33,7 +33,6 @@ public class AllPepEventListener implements PEPListener {
         L.d(new Object() {}, "EVENT = " + event.toXML().toString());
         L.d(new Object() {}, "MESSAGE = " + message.toString());
 
-
         if (event instanceof GeolocationEventElement) {
             GeolocationEventElement geolocationEventElement = (GeolocationEventElement) event;
 

@@ -28,7 +28,7 @@ public class GeolocationItem extends Item {
     private double speed;
     private String street;
     private String text;
-    private String timestamp; // can be a long
+    private String timestamp;
     private String tzo;
     private String uri;
 
@@ -38,15 +38,6 @@ public class GeolocationItem extends Item {
 
     public GeolocationItem() {
         super();
-    }
-
-
-    public GeolocationItem(String locality, double latitude, double longitude, String datum) {
-        super();
-        this.locality = locality;
-        this.lat = latitude;
-        this.lon = longitude;
-        this.datum = datum;
     }
 
     @Override

@@ -73,7 +73,8 @@ public class LocationEventManager {
 
         EventBus.getDefault().post(new SavedUserLocationsChangedEvent(UserManager.instance().getCurrentUser()));
 
-        createGeolocationNodeIfDoesNotExist();
+        deleteGeolocationNode();
+        createGeolocationNode();
 
         XMPPTCPConnection con = MyConnectionManager.instance().getXmppTcpConnection();
         PEPManager pepManager = PEPManager.getInstanceFor(con);
@@ -86,7 +87,7 @@ public class LocationEventManager {
         }
     }
 
-    public LeafNode createGeolocationNode() {
+    private LeafNode createGeolocationNode() {
         L.d(new Object() {});
 
         ConfigureForm form = new ConfigureForm(DataForm.Type.submit);
@@ -108,7 +109,7 @@ public class LocationEventManager {
         return leafNode;
     }
 
-    private LeafNode createGeolocationNodeIfDoesNotExist() {
+    private void deleteGeolocationNode() {
         L.d(new Object() {});
 
         PubSubManager pubSubManager = MyConnectionManager.instance().getPubSubManager();
@@ -119,7 +120,5 @@ public class LocationEventManager {
                 SmackException.NoResponseException | InterruptedException e) {
             e.printStackTrace();
         }
-
-        return createGeolocationNode();
     }
 }

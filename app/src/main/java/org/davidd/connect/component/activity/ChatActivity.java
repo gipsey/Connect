@@ -2,7 +2,6 @@ package org.davidd.connect.component.activity;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 
 import org.davidd.connect.R;
 import org.davidd.connect.component.fragment.ChatFragment;

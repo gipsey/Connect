@@ -147,10 +147,10 @@ public class MyMultiUserChatManager {
 
         for (HostedRoom room : allRooms) {
             // TODO
-//            java.lang.NullPointerException
-//            at org.davidd.connect.manager.MyMultiUserChatManager.getUserRoomWithOwnerAffiliationSync(MyMultiUserChatManager.java:149)
-//            at org.davidd.connect.manager.MyMultiUserChatManager.access$100(MyMultiUserChatManager.java:33)
-//            at org.davidd.connect.manager.MyMultiUserChatManager$2.run(MyMultiUserChatManager.java:122)
+            //            java.lang.NullPointerException
+            //            at org.davidd.connect.manager.MyMultiUserChatManager.getUserRoomWithOwnerAffiliationSync(MyMultiUserChatManager.java:149)
+            //            at org.davidd.connect.manager.MyMultiUserChatManager.access$100(MyMultiUserChatManager.java:33)
+            //            at org.davidd.connect.manager.MyMultiUserChatManager$2.run(MyMultiUserChatManager.java:122)
             MultiUserChat chat = getMUCManager().getMultiUserChat(room.getJid());
 
             try {
