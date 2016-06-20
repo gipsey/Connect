@@ -34,8 +34,8 @@ public class MyNotificationManager {
     private static MyNotificationManager myNotificationManager;
     private NotificationManagerCompat notificationManagerCompat;
 
-    private static List<NotificationWrapper> activeNotifications = new ArrayList<>(); // TODO persistent?
-    private static int uniqueInt; // TODO persistent?
+    private static List<NotificationWrapper> activeNotifications = new ArrayList<>();
+    private static int uniqueInt;
 
     private MyNotificationManager() {
         notificationManagerCompat =
@@ -50,6 +50,10 @@ public class MyNotificationManager {
     }
 
     public void newMessageProcessed(MyMessage myMessage) {
+        if (!shouldShowNotification(myMessage)) {
+            return;
+        }
+
         int id = deleteNotificationLocally(myMessage.getEntityToChatWith().toString());
         if (id == -1) {
             id = ++uniqueInt;
@@ -88,6 +92,19 @@ public class MyNotificationManager {
         }
 
         return id;
+    }
+
+    private boolean shouldShowNotification(MyMessage myMessage) {
+        if (myMessage.getSender().equals(UserManager.instance().getCurrentUser())) {
+            for (NotificationWrapper wrapper : activeNotifications) {
+                if (wrapper.getMyMessage().getEntityToChatWith().equals(myMessage.getEntityToChatWith())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        return true;
     }
 
     @SuppressLint("InlinedApi")
