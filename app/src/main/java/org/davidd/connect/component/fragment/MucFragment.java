@@ -206,8 +206,6 @@ public class MucFragment extends Fragment {
         }
 
         // send it
-        MyMessage myMessage = MyChatManager.instance().sendMessage(muc, message);
-
-        // no need to add to the adapter because will be received as a message
+        MyChatManager.instance().sendMessage(muc, message);
     }
 }

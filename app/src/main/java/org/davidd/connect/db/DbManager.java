@@ -36,7 +36,7 @@ public class DbManager {
 
     public void saveMessage(MyMessage myMessage) {
         saveMessage(
-                myMessage.getType().equals(MyMessage.Type.NORMAL),
+                myMessage.getType() == MyMessage.Type.NORMAL,
                 myMessage.getEntityToChatWith().toString(),
                 myMessage.getSender().getUserJIDProperties().getNameAndDomain(),
                 myMessage.getMessageBody(),
@@ -144,6 +144,7 @@ public class DbManager {
     }
 
     private MyMessage mapMessage(RealmMessage realmMessage) {
+        // TODO jani@
         MyMessage.Type type = realmMessage.isNormalChat() ? MyMessage.Type.NORMAL : MyMessage.Type.GROUP;
         User sender = new User(new UserJIDProperties(realmMessage.getSenderNameAndDomain()));
         EntityBareJid entityToChatWith = null;

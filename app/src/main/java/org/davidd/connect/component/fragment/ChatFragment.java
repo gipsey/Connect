@@ -27,6 +27,7 @@ import org.davidd.connect.component.activity.MapsActivity;
 import org.davidd.connect.component.activity.UserActivity;
 import org.davidd.connect.component.adapter.ChatAdapter;
 import org.davidd.connect.component.adapter.ContactsHelper;
+import org.davidd.connect.component.event.ChatMessageEvent;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.manager.LocationEventManager;
 import org.davidd.connect.manager.MyChatManager;
@@ -52,8 +53,7 @@ import butterknife.OnEditorAction;
 
 import static org.davidd.connect.util.DataUtils.createGsonWithExcludedFields;
 
-public class ChatFragment extends Fragment implements
-        MyChatManager.MessageReceivedListener {
+public class ChatFragment extends Fragment {
 
     public static final String TAG = ChatFragment.class.getName();
 
@@ -164,7 +164,6 @@ public class ChatFragment extends Fragment implements
     @Override
     public void onStart() {
         super.onStart();
-        MyChatManager.instance().addMessageReceivedListener(userToChatWith, this);
         EventBus.getDefault().register(this);
 
         MyConversation conversation = MyChatManager.instance().loadConversation(userToChatWith.getUserJIDProperties().getNameAndDomain());
@@ -180,7 +179,6 @@ public class ChatFragment extends Fragment implements
 
     @Override
     public void onStop() {
-        MyChatManager.instance().removeMessageReceivedListener(userToChatWith, this);
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
@@ -191,6 +189,12 @@ public class ChatFragment extends Fragment implements
             userToChatWith.setUserPresence(message.getUser().getUserPresence());
             updateUserPresenceOnUi();
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void messageReceived(ChatMessageEvent chatMessageEvent) {
+        chatAdapter.add(chatMessageEvent.getMyMessage());
+        chatAdapter.notifyDataSetChanged();
     }
 
     @OnEditorAction(R.id.footer_chat_message_edit_text)
@@ -243,13 +247,5 @@ public class ChatFragment extends Fragment implements
             chatAdapter.add(myMessage);
             chatAdapter.notifyDataSetChanged();
         }
-    }
-
-    @Override
-    public void messageReceived(MyMessage myMessage) {
-        L.d(new Object() {});
-
-        chatAdapter.add(myMessage);
-        chatAdapter.notifyDataSetChanged();
     }
 }

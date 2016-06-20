@@ -101,6 +101,12 @@
             android:exported="false">
         </service>
 
+        <service
+            android:name=".component.service.NotificationActionService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
+
         <receiver
             android:name=".component.receiver.SystemBootsUpReceiver"
             android:enabled="true"

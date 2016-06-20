@@ -75,7 +75,7 @@ public class BitmapUtil {
         // text color
         paint.setColor(colors900[random.nextInt(colors900.length)]);
         // text size in pixels
-        paint.setTextSize((int) (60 * resources.getDisplayMetrics().density));
+        paint.setTextSize((int) (30 * resources.getDisplayMetrics().density));
         // text shadow
         paint.setShadowLayer(1f, 0f, 1f, Color.WHITE);
 

@@ -5,6 +5,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.davidd.connect.ConnectApp;
+import org.davidd.connect.component.event.ChatMessageEvent;
 import org.davidd.connect.component.event.MucMessageEvent;
 import org.davidd.connect.connection.MyConnectionManager;
 import org.davidd.connect.db.DbManager;
@@ -31,18 +32,12 @@ import org.jxmpp.stringprep.XmppStringprepException;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
     private static MyChatManager myChatManager;
     private List<ActiveBaseChat> activeBaseChats = new ArrayList<>();
-
-    // the used key is the user's name and domain
-    private Map<String, List<MessageReceivedListener>> messageListeners = new HashMap<>();
-    private List<ChatUpdatedListener> chatUpdatedListeners = new ArrayList<>();
 
     private MyChatManager() {
     }
@@ -52,39 +47,6 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
             myChatManager = new MyChatManager();
         }
         return myChatManager;
-    }
-
-    public void addMessageReceivedListener(User userToChatWith, MessageReceivedListener listener) {
-        if (listener != null) {
-            List<MessageReceivedListener> listenerList =
-                    messageListeners.get(userToChatWith.getUserJIDProperties().getNameAndDomain());
-
-            if (listenerList == null) {
-                listenerList = new ArrayList<>();
-            }
-
-            listenerList.add(listener);
-
-            messageListeners.put(userToChatWith.getUserJIDProperties().getNameAndDomain(), listenerList);
-        }
-    }
-
-    public void removeMessageReceivedListener(User userToChatWith, MessageReceivedListener listener) {
-        List<MessageReceivedListener> listenerList =
-                messageListeners.get(userToChatWith.getUserJIDProperties().getNameAndDomain());
-
-        listenerList.remove(listener);
-        messageListeners.put(userToChatWith.getUserJIDProperties().getNameAndDomain(), listenerList);
-    }
-
-    public void addChatUpdatedListener(ChatUpdatedListener listener) {
-        if (listener != null && !chatUpdatedListeners.contains(listener)) {
-            chatUpdatedListeners.add(listener);
-        }
-    }
-
-    public void removeChatUpdatedListener(ChatUpdatedListener listener) {
-        chatUpdatedListeners.remove(listener);
     }
 
     @Nullable
@@ -113,6 +75,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
                     message.getBody());
 
             persistConversation(myMessage);
+            chatsUpdated(myMessage, userToChatWith);
 
             return myMessage;
         } catch (SmackException.NotConnectedException | XmppStringprepException | InterruptedException e) {
@@ -143,8 +106,9 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
                     muc.getRoom(),
                     DataUtils.getCurrentDate(),
                     message.getBody());
-
             persistConversation(myMessage);
+
+            chatsUpdated(myMessage, muc);
 
             return myMessage;
         } catch (SmackException.NotConnectedException | InterruptedException e) {
@@ -157,13 +121,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
     @Override
     public void chatCreated(Chat chat, boolean createdLocally) {
         L.d(new Object() {}, "Chat created to: " + chat.getParticipant() + ", locally: " + createdLocally);
-
         chat.addMessageListener(this);
-
-        User participant = getPartnerUser(chat, null);
-        if (createdLocally) {
-            chatsUpdated(participant);
-        }
     }
 
     /**
@@ -173,7 +131,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
     public void processMessage(Chat chat, Message message) {
         L.d(new Object() {}, "Message from = " + chat.getParticipant());
 
-        if (!message.getType().equals(Message.Type.normal) && !message.getType().equals(Message.Type.chat)) {
+        if (message.getType() != Message.Type.normal && message.getType() != Message.Type.chat) {
             return;
         }
 
@@ -194,17 +152,18 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
                 partnerEntityBareJid,
                 DataUtils.getCurrentDate(),
                 message.getBody());
-
         persistConversation(myMessage);
-        notifyMessageReceivedListeners(partner, myMessage);
 
-        chatsUpdated(partner);
+        EventBus.getDefault().post(new ChatMessageEvent(myMessage));
+
+        chatsUpdated(myMessage, partner);
     }
 
     public void processMessage(MultiUserChat muc, Message message) {
-        L.d(new Object() {}, "Message from = " + muc.getRoom().toString());
+        L.d(new Object() {}, "Messag" +
+                "e from = " + muc.getRoom().toString());
 
-        if (!message.getType().equals(Message.Type.groupchat)) {
+        if (message.getType() != Message.Type.groupchat) {
             return;
         }
 
@@ -225,30 +184,7 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
         EventBus.getDefault().post(new MucMessageEvent(muc, myMessage));
 
-        // update active chats
-        Integer itemPosition = null;
-        for (int i = 0; i < activeBaseChats.size(); i++) {
-            if (activeBaseChats.get(i) instanceof ActiveRoomChat) {
-                ActiveRoomChat roomChat = (ActiveRoomChat) activeBaseChats.get(i);
-                if (roomChat.getMultiUserChat().getRoom().equals(muc.getRoom())) {
-                    itemPosition = i;
-                    break;
-                }
-            }
-        }
-
-        ActiveRoomChat roomChat = new ActiveRoomChat(myMessage, muc);
-
-        if (itemPosition == null) {
-            activeBaseChats.add(roomChat);
-        } else {
-            activeBaseChats.remove(itemPosition.intValue());
-            activeBaseChats.add(itemPosition, roomChat);
-        }
-
-        for (ChatUpdatedListener listener : chatUpdatedListeners) {
-            listener.chatsUpdated(Collections.unmodifiableList(activeBaseChats));
-        }
+        chatsUpdated(myMessage, muc);
     }
 
     public List<ActiveBaseChat> getActiveBaseChats() {
@@ -263,72 +199,52 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
         return DbManager.instance().getConversation(partnerEntityNameAndDomain);
     }
 
-    private void notifyMessageReceivedListeners(final User senderUser, final MyMessage myMessage) {
-        L.d(new Object() {});
-
+    private void chatsUpdated(final MyMessage myMessage, final User partner) {
         ConnectApp.getMainHandler().post(new Runnable() {
             @Override
             public void run() {
-                List<MessageReceivedListener> listenerList =
-                        messageListeners.get(senderUser.getUserJIDProperties().getNameAndDomain());
+                partner.setRosterEntry(RosterManager.instance().getRosterEntryForUser(partner.getUserJIDProperties()));
+                partner.setUserPresence(RosterManager.instance().getUserPresenceForUser(partner.getUserJIDProperties()));
 
-                if (listenerList != null) {
-                    for (MessageReceivedListener listener : listenerList) {
-                        listener.messageReceived(myMessage);
-                    }
-                }
+                ActiveUserChat activeUserChat = new ActiveUserChat(myMessage, partner);
+                refreshActiveChatsList(activeUserChat);
+
+                EventBus.getDefault().post(Collections.unmodifiableList(activeBaseChats));
+
+                MyNotificationManager.instance().newMessageProcessed(myMessage);
             }
         });
     }
 
-    /**
-     * Called when messages were updated or new chats were created.
-     */
-    private void chatsUpdated(final User participant) {
-        L.d(new Object() {});
-
+    private void chatsUpdated(final MyMessage myMessage, final MultiUserChat muc) {
         ConnectApp.getMainHandler().post(new Runnable() {
             @Override
             public void run() {
-                // update active chats list
-                MyConversation myConversation =
-                        DbManager.instance().getConversation(participant.getUserJIDProperties().getNameAndDomain());
+                ActiveRoomChat roomChat = new ActiveRoomChat(myMessage, muc);
+                refreshActiveChatsList(roomChat);
 
-                participant.setRosterEntry(RosterManager.instance().getRosterEntryForUser(participant.getUserJIDProperties()));
-                participant.setUserPresence(RosterManager.instance().getUserPresenceForUser(participant.getUserJIDProperties()));
+                EventBus.getDefault().post(Collections.unmodifiableList(activeBaseChats));
 
-                MyMessage myMessage = null;
-                if (!myConversation.getMessageList().isEmpty()) {
-                    myMessage = myConversation.getMessageList().get(myConversation.getMessageList().size() - 1);
-                }
-                ActiveUserChat activeUserChat = new ActiveUserChat(myMessage, participant);
-
-                Integer itemPosition = null;
-                for (int i = 0; i < activeBaseChats.size(); i++) {
-                    if (activeBaseChats.get(i) instanceof ActiveUserChat) {
-                        ActiveUserChat userChat = (ActiveUserChat) activeBaseChats.get(i);
-                        if (userChat.getUserToChatWith().equals(activeUserChat.getUserToChatWith())) {
-                            itemPosition = i;
-                            break;
-                        }
-                    }
-                }
-
-                if (itemPosition == null) {
-                    activeBaseChats.add(activeUserChat);
-                } else {
-                    activeBaseChats.remove(itemPosition.intValue());
-                    activeBaseChats.add(itemPosition, activeUserChat);
-                }
-
-                for (ChatUpdatedListener listener : chatUpdatedListeners) {
-                    listener.chatsUpdated(Collections.unmodifiableList(activeBaseChats));
-                }
-
-                // TODO: update notification list
-                // MyNotificationManager.instance().showNewMessageNotification(getActivity(), contactsExpandableListAdapter.getUser(groupPosition, childPosition), "click");
+                MyNotificationManager.instance().newMessageProcessed(myMessage);
             }
         });
+    }
+
+    private void refreshActiveChatsList(ActiveBaseChat activeBaseChat) {
+        Integer itemPosition = null;
+        for (int i = 0; i < activeBaseChats.size(); i++) {
+            if (activeBaseChat.equals(activeBaseChats.get(i))) {
+                itemPosition = i;
+                break;
+            }
+        }
+
+        if (itemPosition == null) {
+            activeBaseChats.add(activeBaseChat);
+        } else {
+            activeBaseChats.remove(itemPosition.intValue());
+            activeBaseChats.add(itemPosition, activeBaseChat);
+        }
     }
 
     private User getPartnerUser(Chat chat, Message message) {
@@ -341,13 +257,5 @@ public class MyChatManager implements ChatManagerListener, ChatMessageListener {
 
     private ChatManager getChatManager() {
         return MyConnectionManager.instance().getChatManager();
-    }
-
-    public interface MessageReceivedListener {
-        void messageReceived(MyMessage myMessage);
-    }
-
-    public interface ChatUpdatedListener {
-        void chatsUpdated(List<ActiveBaseChat> activeUserChats);
     }
 }

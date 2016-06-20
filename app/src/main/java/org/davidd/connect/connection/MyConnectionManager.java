@@ -255,7 +255,7 @@ public class MyConnectionManager implements ConnectionListener {
         XMPPTCPConnection.setUseStreamManagementDefault(true);
 
         XMPPTCPConnectionConfiguration.Builder builder = XMPPTCPConnectionConfiguration.builder();
-        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.disabled);
+        builder.setSecurityMode(ConnectionConfiguration.SecurityMode.ifpossible);
         builder.setPort(PORT);
         builder.setConnectTimeout(CONNECTION_AND_PACKET_TIMEOUT);
         builder.setCompressionEnabled(true);

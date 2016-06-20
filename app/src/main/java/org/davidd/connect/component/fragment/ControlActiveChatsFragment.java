@@ -26,8 +26,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-public class ControlActiveChatsFragment extends ControlTabFragment implements
-        MyChatManager.ChatUpdatedListener {
+public class ControlActiveChatsFragment extends ControlTabFragment {
 
     @Bind(R.id.active_chats_listView)
     ListView listView;
@@ -76,7 +75,6 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
 
     public void onStart() {
         super.onStart();
-        MyChatManager.instance().addChatUpdatedListener(this);
         EventBus.getDefault().register(this);
     }
 
@@ -89,7 +87,6 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
     @Override
     public void onStop() {
         super.onStop();
-        MyChatManager.instance().removeChatUpdatedListener(this);
         EventBus.getDefault().unregister(this);
     }
 
@@ -106,13 +103,13 @@ public class ControlActiveChatsFragment extends ControlTabFragment implements
         }
     }
 
-    @Override
-    public void onPagesSelected() {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void chatsUpdated(List<ActiveBaseChat> activeBaseChats) {
+        updateActiveChats(activeBaseChats);
     }
 
     @Override
-    public void chatsUpdated(List<ActiveBaseChat> activeBaseChats) {
-        updateActiveChats(activeBaseChats);
+    public void onPagesSelected() {
     }
 
     private void updateActiveChats(List<ActiveBaseChat> activeBaseChats) {
