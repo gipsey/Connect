@@ -133,6 +133,7 @@ public abstract class NavigationActivity extends BaseAppCompatActivity implement
                 logOut();
                 break;
             case R.id.drawer_settings:
+                ActivityUtils.navigate(this, SettingsActivity.class, null, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
                 break;
             case R.id.drawer_about:
         }

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="Run at device start">
+
+        <CheckBoxPreference
+            android:key="boot"
+            android:title="Start the application when device boots up"
+            android:summary="By enabling you will get notifications of new messages"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Notifications">
+
+        <CheckBoxPreference
+            android:key="notification"
+            android:title="Show notifications"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Share location">
+
+        <CheckBoxPreference
+            android:key="location"
+            android:title="Share your geographical location with others"/>
+    </PreferenceCategory>
+
+</PreferenceScreen>
