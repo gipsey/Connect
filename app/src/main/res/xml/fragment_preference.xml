@@ -6,7 +6,7 @@
 
         <CheckBoxPreference
             android:key="boot"
-            android:title="Start the application when device boots up"
+            android:title="Start at device boot"
             android:summary="By enabling you will get notifications of new messages"/>
     </PreferenceCategory>
 
@@ -23,7 +23,8 @@
 
         <CheckBoxPreference
             android:key="location"
-            android:title="Share your geographical location with others"/>
+            android:title="Geographical location sharing"
+            android:summary="Share your geographical location with others"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

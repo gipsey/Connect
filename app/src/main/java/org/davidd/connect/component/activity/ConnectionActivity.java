@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.davidd.connect.R;
+import org.davidd.connect.component.fragment.SettingsFragment;
 import org.davidd.connect.component.service.LocationService;
 import org.davidd.connect.connection.ConnectionService;
 import org.davidd.connect.connection.MyConnectionManager;
@@ -13,6 +14,7 @@ import org.davidd.connect.connection.event.OnAuthSucceededEvent;
 import org.davidd.connect.connection.event.OnConnectionFailedEvent;
 import org.davidd.connect.connection.event.OnConnectionSucceededEvent;
 import org.davidd.connect.debug.L;
+import org.davidd.connect.manager.PreferencesManager;
 import org.davidd.connect.model.User;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;

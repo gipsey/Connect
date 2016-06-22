@@ -25,6 +25,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.davidd.connect.R;
+import org.davidd.connect.component.fragment.SettingsFragment;
 import org.davidd.connect.connection.event.OnAuthFailedEvent;
 import org.davidd.connect.connection.event.OnAuthSucceededEvent;
 import org.davidd.connect.connection.event.OnConnectionFailedEvent;
@@ -260,6 +261,10 @@ public class LoginActivity extends ConnectionActivity implements LoaderCallbacks
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onAuthSucceeded(OnAuthSucceededEvent event) {
+        PreferencesManager.instance().setSettingsValue(SettingsFragment.BOOT_KEY, SettingsFragment.BOOT_DEFAULT);
+        PreferencesManager.instance().setSettingsValue(SettingsFragment.NOTIFICATION_KEY, SettingsFragment.NOTIFICATION_DEFAULT);
+        PreferencesManager.instance().setSettingsValue(SettingsFragment.LOCATION_KEY, SettingsFragment.LOCATION_DEFAULT);
+
         UserManager.instance().setCurrentUser(user);
         PreferencesManager.instance().saveUser(user);
 

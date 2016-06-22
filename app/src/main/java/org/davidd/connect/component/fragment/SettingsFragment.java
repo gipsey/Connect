@@ -1,6 +1,7 @@
 package org.davidd.connect.component.fragment;
 
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
@@ -11,9 +12,9 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
 
     public static final String TAG = SettingsFragment.class.getName();
 
-    private static final boolean BOOT_DEFAULT = true;
-    private static final boolean NOTIFICATION_DEFAULT = true;
-    private static final boolean LOCATION_DEFAULT = true;
+    public static final boolean BOOT_DEFAULT = true;
+    public static final boolean NOTIFICATION_DEFAULT = true;
+    public static final boolean LOCATION_DEFAULT = true;
 
     public static final String BOOT_KEY = "boot";
     public static final String NOTIFICATION_KEY = "notification";
@@ -26,17 +27,13 @@ public class SettingsFragment extends PreferenceFragment implements Preference.O
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.fragment_preference);
 
-        Preference bootPreference = findPreference(BOOT_KEY);
-        Preference notificationPreference = findPreference(NOTIFICATION_KEY);
-        Preference locationPreference = findPreference(LOCATION_KEY);
+        CheckBoxPreference bootPreference = (CheckBoxPreference) findPreference(BOOT_KEY);
+        CheckBoxPreference notificationPreference = (CheckBoxPreference) findPreference(NOTIFICATION_KEY);
+        CheckBoxPreference locationPreference = (CheckBoxPreference) findPreference(LOCATION_KEY);
 
-//        bootPreference.setDefaultValue(PreferencesManager.instance().getSettingsValue(BOOT_KEY, BOOT_DEFAULT));
-//        notificationPreference.setDefaultValue(PreferencesManager.instance().getSettingsValue(NOTIFICATION_KEY, NOTIFICATION_DEFAULT));
-//        locationPreference.setDefaultValue(PreferencesManager.instance().getSettingsValue(LOCATION_KEY, LOCATION_DEFAULT));
-
-        bootPreference.setDefaultValue(true);
-        notificationPreference.setDefaultValue(true);
-        locationPreference.setDefaultValue(true);
+        bootPreference.setChecked(PreferencesManager.instance().getSettingsValue(BOOT_KEY, BOOT_DEFAULT));
+        notificationPreference.setChecked(PreferencesManager.instance().getSettingsValue(NOTIFICATION_KEY, NOTIFICATION_DEFAULT));
+        locationPreference.setChecked(PreferencesManager.instance().getSettingsValue(LOCATION_KEY, LOCATION_DEFAULT));
 
         bootPreference.setOnPreferenceChangeListener(this);
         notificationPreference.setOnPreferenceChangeListener(this);

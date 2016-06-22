@@ -3,6 +3,7 @@ package org.davidd.connect.component.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -29,6 +30,8 @@ import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
 import org.davidd.connect.R;
+import org.davidd.connect.component.fragment.SettingsFragment;
+import org.davidd.connect.manager.PreferencesManager;
 import org.davidd.connect.manager.UserManager;
 import org.davidd.connect.util.ActivityUtils;
 import org.davidd.connect.util.DataUtils;
@@ -75,12 +78,18 @@ public abstract class NavigationActivity extends BaseAppCompatActivity implement
         });
 
         ImageView userPhotoImageView = (ImageView) drawerHeaderMainLayout.findViewById(R.id.user_photo_imageView);
-        userPhotoImageView.setImageBitmap(UserManager.instance().getCurrentUser().getUserPhoto());
+
+        Bitmap photo = UserManager.instance().getCurrentUser().getUserPhoto();
+        if (photo != null) {
+            userPhotoImageView.setImageBitmap(photo);
+        }
 
         TextView userNameTextView = (TextView) drawerHeaderMainLayout.findViewById(R.id.user_name_textView);
         userNameTextView.setText(UserManager.instance().getCurrentUser().getUserJIDProperties().getJID());
 
-        checkIfLocationSettingsAreSet();
+        if (PreferencesManager.instance().getSettingsValue(SettingsFragment.LOCATION_KEY, false)) {
+            checkIfLocationSettingsAreSet();
+        }
     }
 
     @Override

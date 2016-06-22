@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.HandlerThread;
 
 import org.davidd.connect.ConnectApp;
+import org.davidd.connect.component.fragment.SettingsFragment;
 import org.davidd.connect.debug.L;
 import org.davidd.connect.xmpp.GeolocationItem;
 
@@ -80,9 +81,10 @@ public class MyLocationManager implements LocationListener {
     public void onLocationChanged(Location location) {
         L.d(new Object() {}, "Location = " + location.toString());
 
-        GeolocationItem item = buildGeolocationItemFromLocation(location);
-
-        LocationEventManager.instance().sendUserLocationItem(item);
+        if (PreferencesManager.instance().getSettingsValue(SettingsFragment.LOCATION_KEY, false)) {
+            GeolocationItem item = buildGeolocationItemFromLocation(location);
+            LocationEventManager.instance().sendUserLocationItem(item);
+        }
     }
 
     @Override

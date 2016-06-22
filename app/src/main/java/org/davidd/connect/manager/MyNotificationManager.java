@@ -15,6 +15,7 @@ import org.davidd.connect.ConnectApp;
 import org.davidd.connect.R;
 import org.davidd.connect.component.activity.ChatActivity;
 import org.davidd.connect.component.activity.SplashActivity;
+import org.davidd.connect.component.fragment.SettingsFragment;
 import org.davidd.connect.component.service.NotificationActionService;
 import org.davidd.connect.model.MyMessage;
 import org.davidd.connect.model.User;
@@ -50,6 +51,10 @@ public class MyNotificationManager {
     }
 
     public void newMessageProcessed(MyMessage myMessage) {
+        if (!PreferencesManager.instance().getSettingsValue(SettingsFragment.NOTIFICATION_KEY, false)) {
+            return;
+        }
+
         if (!shouldShowNotification(myMessage)) {
             return;
         }
