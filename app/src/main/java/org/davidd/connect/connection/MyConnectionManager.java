@@ -292,7 +292,11 @@ public class MyConnectionManager implements ConnectionListener {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
-                xmppTcpConnection.disconnect();
+                try {
+                    xmppTcpConnection.disconnect();
+                } catch (Exception e) {
+                    L.ex(e);
+                }
                 return null;
             }
 

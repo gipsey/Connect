@@ -75,7 +75,7 @@ public class MyMultiUserChatManager {
         try {
             hostedRooms = getMUCManager().getHostedRooms(serviceJid);
         } catch (XMPPException.XMPPErrorException | SmackException.NoResponseException | InterruptedException |
-                SmackException.NotConnectedException | MultiUserChatException.NotAMucServiceException e) {
+                SmackException.NotConnectedException | MultiUserChatException.NotAMucServiceException | NullPointerException e) {
             L.ex(e);
         }
 
@@ -114,6 +114,11 @@ public class MyMultiUserChatManager {
         return rooms;
     }
 
+    public void refreshUserRoomWithOwnerAffiliationAsync() {
+        chats = null;
+        getUserRoomWithOwnerAffiliationAsync();
+    }
+
     public void getUserRoomWithOwnerAffiliationAsync() {
         if (chats == null || chats.isEmpty()) {
             new Thread(new Runnable() {
@@ -146,18 +151,13 @@ public class MyMultiUserChatManager {
         User me = UserManager.instance().getCurrentUser();
 
         for (HostedRoom room : allRooms) {
-            // TODO
-            //            java.lang.NullPointerException
-            //            at org.davidd.connect.manager.MyMultiUserChatManager.getUserRoomWithOwnerAffiliationSync(MyMultiUserChatManager.java:149)
-            //            at org.davidd.connect.manager.MyMultiUserChatManager.access$100(MyMultiUserChatManager.java:33)
-            //            at org.davidd.connect.manager.MyMultiUserChatManager$2.run(MyMultiUserChatManager.java:122)
-            MultiUserChat chat = getMUCManager().getMultiUserChat(room.getJid());
-
+            MultiUserChat chat;
             try {
+                chat = getMUCManager().getMultiUserChat(room.getJid());
                 chat.join(Resourcepart.from(me.getUserJIDProperties().getJID()));
             } catch (SmackException.NoResponseException | XmppStringprepException |
                     MultiUserChatException.NotAMucServiceException | InterruptedException |
-                    SmackException.NotConnectedException | XMPPException.XMPPErrorException e) {
+                    SmackException.NotConnectedException | XMPPException.XMPPErrorException | NullPointerException e) {
                 e.printStackTrace();
                 continue; // this means that the user doesn't have permission to this room
             }

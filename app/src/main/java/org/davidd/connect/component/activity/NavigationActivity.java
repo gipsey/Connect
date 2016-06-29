@@ -79,10 +79,12 @@ public abstract class NavigationActivity extends BaseAppCompatActivity implement
 
         ImageView userPhotoImageView = (ImageView) drawerHeaderMainLayout.findViewById(R.id.user_photo_imageView);
 
-        Bitmap photo = UserManager.instance().getCurrentUser().getUserPhoto();
-        if (photo != null) {
-            userPhotoImageView.setImageBitmap(photo);
+        if (UserManager.instance().getCurrentUser() == null) {
+            return;
         }
+
+        Bitmap photo = UserManager.instance().getCurrentUser().getUserPhoto();
+        userPhotoImageView.setImageBitmap(photo);
 
         TextView userNameTextView = (TextView) drawerHeaderMainLayout.findViewById(R.id.user_name_textView);
         userNameTextView.setText(UserManager.instance().getCurrentUser().getUserJIDProperties().getJID());
@@ -143,8 +145,6 @@ public abstract class NavigationActivity extends BaseAppCompatActivity implement
                 break;
             case R.id.drawer_settings:
                 ActivityUtils.navigate(this, SettingsActivity.class, null, Intent.FLAG_ACTIVITY_CLEAR_TOP, false);
-                break;
-            case R.id.drawer_about:
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);

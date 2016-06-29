@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ import org.davidd.connect.component.adapter.RoomsArrayAdapter;
 import org.davidd.connect.component.event.RoomsUpdatedEvent;
 import org.davidd.connect.component.exception.RoomNameExistsException;
 import org.davidd.connect.manager.MyMultiUserChatManager;
+import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.model.Room;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -36,6 +38,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class ControlRoomsFragment extends ControlTabFragment {
+
+    @Bind(R.id.swipeToRefreshLayout)
+    SwipeRefreshLayout swipeRefreshLayout;
 
     @Bind(R.id.rooms_listView)
     ListView roomsListView;
@@ -95,6 +100,16 @@ public class ControlRoomsFragment extends ControlTabFragment {
                 showNewRoomAlert();
             }
         });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                showRefreshLayout(true);
+                roomsArrayAdapter.clear();
+
+                MyMultiUserChatManager.instance().refreshUserRoomWithOwnerAffiliationAsync();
+            }
+        });
     }
 
     @Override
@@ -149,6 +164,8 @@ public class ControlRoomsFragment extends ControlTabFragment {
 
         roomsArrayAdapter.addAll(roomList);
         roomsArrayAdapter.notifyDataSetChanged();
+
+        showRefreshLayout(false);
     }
 
     private void showNewRoomAlert() {
@@ -193,5 +210,14 @@ public class ControlRoomsFragment extends ControlTabFragment {
             e.printStackTrace();
             Toast.makeText(getActivity(), "Room '" + roomName + "' already exists, try another", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void showRefreshLayout(final boolean isRefreshing) {
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(isRefreshing);
+            }
+        });
     }
 }

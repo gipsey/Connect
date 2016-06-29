@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import org.davidd.connect.R;
 import org.davidd.connect.component.adapter.ContactGroup;
 import org.davidd.connect.component.adapter.ContactsExpandableListAdapter;
+import org.davidd.connect.manager.MyChatManager;
 import org.davidd.connect.manager.RefreshRoster;
 import org.davidd.connect.manager.RosterManager;
 import org.davidd.connect.manager.events.UserAcceptedStatusEvent;
@@ -35,6 +37,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class ControlContactsFragment extends ControlTabFragment {
+
+    @Bind(R.id.swipeToRefreshLayout)
+    SwipeRefreshLayout swipeRefreshLayout;
 
     @Bind(R.id.contacts_expandableListView)
     ExpandableListView expandableListView;
@@ -93,6 +98,16 @@ public class ControlContactsFragment extends ControlTabFragment {
                 showNewContactAlert();
             }
         });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                showRefreshLayout(true);
+                contactsExpandableListAdapter.clear();
+
+                showUserContacts(RosterManager.instance().getUserContacts());
+            }
+        });
     }
 
     @Override
@@ -145,6 +160,8 @@ public class ControlContactsFragment extends ControlTabFragment {
         contactGroups.addAll(updateContactSubscriptions(RosterManager.instance().getUserSubscriptions()));
         contactGroups.addAll(updateContactGroups(userContacts));
         contactsExpandableListAdapter.notifyDataSetChanged();
+
+        showRefreshLayout(false);
     }
 
     private List<ContactGroup> updateContactSubscriptions(List<User> userSubscriptions) {
@@ -224,5 +241,14 @@ public class ControlContactsFragment extends ControlTabFragment {
     private void contactAddingAttempt(String userJid) {
         User user = new User(new UserJIDProperties(userJid));
         RosterManager.instance().addContact(user);
+    }
+
+    private void showRefreshLayout(final boolean isRefreshing) {
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(isRefreshing);
+            }
+        });
     }
 }

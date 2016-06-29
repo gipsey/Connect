@@ -2,6 +2,7 @@ package org.davidd.connect.component.fragment;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,9 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class ControlActiveChatsFragment extends ControlTabFragment {
+
+    @Bind(R.id.swipeToRefreshLayout)
+    SwipeRefreshLayout swipeRefreshLayout;
 
     @Bind(R.id.active_chats_listView)
     ListView listView;
@@ -69,6 +73,15 @@ public class ControlActiveChatsFragment extends ControlTabFragment {
                 } else if (baseChat instanceof ActiveRoomChat) {
                     navigateToChatListener.navigateToChat(((ActiveRoomChat) baseChat).getMultiUserChat());
                 }
+            }
+        });
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                showRefreshLayout(true);
+                chatsAdapter.clear();
+                chatsUpdated(MyChatManager.instance().getActiveBaseChats());
             }
         });
     }
@@ -115,5 +128,15 @@ public class ControlActiveChatsFragment extends ControlTabFragment {
     private void updateActiveChats(List<ActiveBaseChat> activeBaseChats) {
         chatsAdapter.clear();
         chatsAdapter.addAll(activeBaseChats);
+        showRefreshLayout(false);
+    }
+
+    private void showRefreshLayout(final boolean isRefreshing) {
+        swipeRefreshLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeRefreshLayout.setRefreshing(isRefreshing);
+            }
+        });
     }
 }

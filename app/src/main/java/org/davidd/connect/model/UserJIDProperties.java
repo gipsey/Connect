@@ -59,6 +59,10 @@ public class UserJIDProperties {
         String[] nameAndTheRest = splitByDelimiter(JID, "@");
         name = nameAndTheRest[0];
 
+        if (nameAndTheRest.length == 1) {
+            return;
+        }
+
         String[] domainAndResource = splitByDelimiter(nameAndTheRest[1], "/");
         domain = domainAndResource[0];
         resource = domainAndResource[1];

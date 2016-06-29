@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipeToRefreshLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <ListView
-        android:id="@+id/active_chats_listView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="@drawable/divider"/>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/active_chats_empty_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:textAllCaps="false"
-        android:textSize="@dimen/textSizeLarge"/>
+        <ListView
+            android:id="@+id/active_chats_listView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="@drawable/divider"/>
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/active_chats_empty_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textAllCaps="false"
+            android:textSize="@dimen/textSizeLarge"/>
+    </LinearLayout>
+</android.support.v4.widget.SwipeRefreshLayout>

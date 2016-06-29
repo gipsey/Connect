@@ -123,6 +123,11 @@ public class ContactsExpandableListAdapter extends BaseExpandableListAdapter {
         return contactGroups.get(groupPosition).getUsers().get(childPosition);
     }
 
+    public void clear() {
+        contactGroups.clear();
+        notifyDataSetChanged();
+    }
+
     private void setupContact(ContactViewHolder viewHolder, ContactGroup group, final User user) {
         viewHolder.firstLetterTextView.setText(String.valueOf(user.getUserJIDProperties().getJID().charAt(0)));
         viewHolder.userNameTextView.setText(user.getUserJIDProperties().getNameAndDomain());
